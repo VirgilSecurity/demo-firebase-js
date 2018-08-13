@@ -1,0 +1,79 @@
+@import url('https://fonts.googleapis.com/css?family=Source+Code+Pro');
+
+@font-face {
+	font-family: 'Muller';
+	font-weight: 400;
+	font-style: normal;
+	font-display: optional;
+	src: url('https://cdn.virgilsecurity.com/assets/fonts/Muller/muller-regular.eot');
+	src:
+		url('https://cdn.virgilsecurity.com/assets/fonts/Muller/muller-regular.eot?#iefix') format('embedded-opentype'),
+		url('https://cdn.virgilsecurity.com/assets/fonts/Muller/muller-regular.woff2') format('woff2'),
+		url('https://cdn.virgilsecurity.com/assets/fonts/Muller/muller-regular.woff') format('woff'),
+		url('https://cdn.virgilsecurity.com/assets/fonts/Muller/muller-regular.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Muller';
+	font-weight: 500;
+	font-style: normal;
+	font-display: optional;
+	src: url('https://cdn.virgilsecurity.com/assets/fonts/Muller/muller-medium.eot');
+	src:
+		url('https://cdn.virgilsecurity.com/assets/fonts/Muller/muller-medium.eot?#iefix') format('embedded-opentype'),
+		url('https://cdn.virgilsecurity.com/assets/fonts/Muller/muller-medium.woff2') format('woff2'),
+		url('https://cdn.virgilsecurity.com/assets/fonts/Muller/muller-medium.woff') format('woff'),
+		url('https://cdn.virgilsecurity.com/assets/fonts/Muller/muller-medium.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Muller';
+	font-weight: 700;
+	font-style: normal;
+	font-display: optional;
+	src: url('https://cdn.virgilsecurity.com/assets/fonts/Muller/muller-bold.eot');
+	src:
+		url('https://cdn.virgilsecurity.com/assets/fonts/Muller/muller-bold.eot?#iefix') format('embedded-opentype'),
+		url('https://cdn.virgilsecurity.com/assets/fonts/Muller/muller-bold.woff2') format('woff2'),
+		url('https://cdn.virgilsecurity.com/assets/fonts/Muller/muller-bold.woff') format('woff'),
+		url('https://cdn.virgilsecurity.com/assets/fonts/Muller/muller-bold.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Lato';
+	font-weight: 400;
+	font-style: normal;
+	font-display: optional;
+	src: url('https://cdn.virgilsecurity.com/assets/fonts/Lato/Lato-Regular.eot');
+	src:
+		url('https://cdn.virgilsecurity.com/assets/fonts/Lato/Lato-Regular.eot?#iefix') format('embedded-opentype'),
+		url('https://cdn.virgilsecurity.com/assets/fonts/Lato/Lato-Regular.woff2') format('woff2'),
+		url('https://cdn.virgilsecurity.com/assets/fonts/Lato/Lato-Regular.woff') format('woff'),
+		url('https://cdn.virgilsecurity.com/assets/fonts/Lato/Lato-Regular.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Lato';
+	font-weight: 500;
+	font-style: normal;
+	font-display: optional;
+	src: url('https://cdn.virgilsecurity.com/assets/fonts/Lato/Lato-Medium.eot');
+	src:
+		url('https://cdn.virgilsecurity.com/assets/fonts/Lato/Lato-Medium.eot?#iefix') format('embedded-opentype'),
+		url('https://cdn.virgilsecurity.com/assets/fonts/Lato/Lato-Medium.woff2') format('woff2'),
+		url('https://cdn.virgilsecurity.com/assets/fonts/Lato/Lato-Medium.woff') format('woff'),
+		url('https://cdn.virgilsecurity.com/assets/fonts/Lato/Lato-Medium.ttf') format('truetype');
+}
+
+@font-face {
+	font-family: 'Lato';
+	font-weight: 700;
+	font-style: normal;
+	font-display: optional;
+	src: url('https://cdn.virgilsecurity.com/assets/fonts/Lato/Lato-Bold.eot');
+	src:
+		url('https://cdn.virgilsecurity.com/assets/fonts/Lato/Lato-Bold.eot?#iefix') format('embedded-opentype'),
+		url('https://cdn.virgilsecurity.com/assets/fonts/Lato/Lato-Bold.woff2') format('woff2'),
+		url('https://cdn.virgilsecurity.com/assets/fonts/Lato/Lato-Bold.woff') format('woff'),
+		url('https://cdn.virgilsecurity.com/assets/fonts/Lato/Lato-Bold.ttf') format('truetype');
+}

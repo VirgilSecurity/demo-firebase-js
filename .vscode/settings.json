@@ -1,0 +1,5 @@
+{
+    "tslint.autoFixOnSave": true,
+    "emmet.showSuggestionsAsSnippets": true,
+    "prettier.tslintIntegration": true
+}
