@@ -16,8 +16,4 @@ firebase.initializeApp({
 
 firebase.firestore().settings({ timestampsInSnapshots: true })
 
-const render = () => ReactDOM.render(<App />, document.getElementById('root'))
-
-if (module.hot) {
-    module.hot.accept(render)
-}
+ReactDOM.render(<App />, document.getElementById('root'));

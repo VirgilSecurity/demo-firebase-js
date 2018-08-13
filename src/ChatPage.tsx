@@ -1,7 +1,9 @@
-import * as React from 'react';
+import React from 'react';
 import styled from 'styled-components';
-import { IWithStore, injectStore } from './model/Store';
-import { observer } from 'mobx-react';
+import firebase from 'firebase';
+import { channels } from './model/Channels';
+import Channels from './components/Channels';
+import { IChannel } from './components/Channels';
 
 const ChatLayout = styled.div`
     display: flex;
@@ -13,44 +15,49 @@ const SideBar = styled.aside`
     border-right: 2px solid grey;
 `;
 
-const SideBarItem = styled.button`
-    height: 80px;
-    width: 100%;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    border: 0;
-`;
+export interface IChatPageProps {}
+export interface IChatPageState {
+    user: firebase.User | null;
+    channels: IChannel[];
+}
 
-const Avatar = styled.img`
-    height: 48px;
-    width: 48px;
-    border-radius: 48px;
-`;
-
-const Username = styled.div`
-    display: flex;
-    align-items: center;
-    flex: 1 0 auto;
-    padding: 20px;
-`;
-
-export interface IChatPageProps extends IWithStore {}
-
-@injectStore()
-@observer
 export default class ChatPage extends React.Component<IChatPageProps> {
+    state = {
+        user: firebase.auth().currentUser,
+        channels: [],
+    };
+
+    componentDidMount() {
+        firebase.auth().onAuthStateChanged(user => {
+            this.setState({ user });
+            if (user) {
+                const chan = channels.getChannels(user.email!.replace('@virgilfirebase.com', ''));
+                chan.then(c => {
+                    this.setState({ channels: c });
+                });
+            }
+        });
+    }
+
+    loadChannel(channel: IChannel) {
+        firebase
+            .firestore()
+            .collection('Channels')
+            .doc(channel.id)
+            .collection('Messages')
+            .get()
+            .then(querySnapshot => querySnapshot.docs.map(d => d.data()))
+            .then(console.log)
+    }
+
     render() {
+        if (!this.state.user) return <p>...loading</p>;
         return (
             <ChatLayout>
                 <SideBar>
                     <button>new conversation</button>
-                    <button onClick={this.props.store!.user.signOut}>sign out</button>
                     <hr />
-                    <SideBarItem>
-                        <Avatar src="https://lh3.googleusercontent.com/-ExpzmdxYDDw/AAAAAAAAAAI/AAAAAAAAAAA/AAnnY7pqObCl47CPnKiWN42jTYi3_7Sc2g/s192-c-mo/photo.jpg" />
-                        <Username>Hello</Username>
-                    </SideBarItem>
+                    <Channels loadChannel={this.loadChannel} channels={this.state.channels} />
                 </SideBar>
             </ChatLayout>
         );
