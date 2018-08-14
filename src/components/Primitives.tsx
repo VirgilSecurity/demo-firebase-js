@@ -23,3 +23,9 @@ export const PrimaryButton = Button.extend`
         background-color: #da322c;
     }
 `;
+
+export const Avatar = styled.img`
+    height: 50px;
+    width: 50px;
+    border-radius: 50px;
+`;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Formik, Form, Field, FieldProps, FormikActions } from 'formik';
 import InputField from './InputField';
-import { PrimaryButton } from './Button';
+import { PrimaryButton } from './Primitives';
 
 export interface IAuthFormValues {
     email: string;

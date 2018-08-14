@@ -1,5 +1,6 @@
 import * as React from 'react';
 import styled from 'styled-components';
+import { Avatar } from './Primitives';
 
 const SideBarItem = styled.button`
     height: 80px;
@@ -8,12 +9,6 @@ const SideBarItem = styled.button`
     display: flex;
     align-items: center;
     border: 0;
-`;
-
-const Avatar = styled.img`
-    height: 48px;
-    width: 48px;
-    border-radius: 48px;
 `;
 
 const Username = styled.div`
@@ -31,14 +26,15 @@ export interface IChannel {
 
 export interface IChannelsProps {
     channels: IChannel[];
-    loadChannel: (channel: IChannel) => void;
+    onClick: (channel: IChannel) => void;
 }
 
 export default class Channels extends React.Component<IChannelsProps> {
+
     renderItem = (item: IChannel) => {
         return (
-            <SideBarItem onClick={() => this.props.loadChannel(item)} key={item.members[1]}>
-                <Avatar src="https://lh3.googleusercontent.com/-ExpzmdxYDDw/AAAAAAAAAAI/AAAAAAAAAAA/AAnnY7pqObCl47CPnKiWN42jTYi3_7Sc2g/s192-c-mo/photo.jpg" />
+            <SideBarItem onClick={() => this.props.onClick(item)} key={item.members[1]}>
+                <Avatar src={"https://source.unsplash.com/random/"} />
                 <Username>{item.members[1]}</Username>
             </SideBarItem>
         );

@@ -1,4 +1,11 @@
 {
-    "presets": ["env", "react"],
-    "plugins": ["react-hot-loader/babel"]
-  }
+  "presets": ["env", "react", "es2017"],
+  "plugins": [
+    "react-hot-loader/babel", ["transform-runtime",
+      {
+        "polyfill": false,
+        "regenerator": true
+      }
+    ]
+  ]
+}

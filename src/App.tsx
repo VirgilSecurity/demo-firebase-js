@@ -3,7 +3,17 @@ import { Route, BrowserRouter as Router } from 'react-router-dom';
 import ChatPage from './ChatPage';
 import AuthPage from './AuthPage';
 
-import { Routes } from './model/Routes';
+import { Routes } from './services/Routes';
+import { injectGlobal } from 'styled-components';
+
+injectGlobal`
+    html {
+        box-sizing: border-box;
+    }
+    *, *:before, *:after {
+        box-sizing: inherit;
+    }
+`;
 
 export default class App extends React.Component {
     render() {
