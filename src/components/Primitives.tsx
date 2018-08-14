@@ -1,4 +1,3 @@
-import React from 'react';
 import styled from 'styled-components';
 
 export const Button = styled.button`
@@ -24,8 +23,13 @@ export const PrimaryButton = Button.extend`
     }
 `;
 
-export const Avatar = styled.img`
+export const Avatar = styled.div`
     height: 50px;
     width: 50px;
     border-radius: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    background-color: lightgray;
 `;

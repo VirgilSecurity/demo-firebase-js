@@ -23,9 +23,9 @@ class ChannelsApi {
         return this.getMessagesFromSnapshot(snapshot);
     }
 
-    sendMessage(channel: IChannel, message: string) {
+    sendMessage(channel: IChannel, message: string, username: string) {
         firebase.firestore().runTransaction(t => {
-            return this.updateMessage(t, channel, message);
+            return this.updateMessage(t, channel, message, username);
         });
     }
 
@@ -51,6 +51,7 @@ class ChannelsApi {
         transaction: firebase.firestore.Transaction,
         channel: IChannel,
         message: string,
+        username: string
     ) => {
         const channelRef = this.collectionRef.doc(channel.id);
         const snapshot = await transaction.get(channelRef);
@@ -64,8 +65,8 @@ class ChannelsApi {
             transaction.set(messagesCollectionRef, {
                 body: message,
                 createdAt: new Date(),
-                sender: channel.members[0],
-                receiver: channel.members[1],
+                sender: username,
+                receiver: channel.members.filter(e => e !== username)[0],
             });
         }
 

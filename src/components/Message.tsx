@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { Avatar } from './Primitives';
 import { IMessage } from './Messages';
 import format from 'date-fns/format';
+import { getRandomColor } from '../utils/strings';
 
 const MessageContainer = styled.div`
     width: 100%;
@@ -38,16 +39,16 @@ export interface IMessageProps {
     message: IMessage;
 }
 
-export default (props: IMessageProps) => {
+export default function Message({ message }: IMessageProps) {
     return (
         <MessageContainer>
-            <MessageAvatar src="https://source.unsplash.com/random" />
+            <MessageAvatar color={getRandomColor()}>{message.sender.slice(0, 2).toUpperCase()}</MessageAvatar>
             <MessageContent>
                 <MessageHeader>
-                    <h3>{props.message.sender}</h3>
-                    <span>{format(props.message.createdAt, 'HH:mm:ss')}</span>
+                    <h3>{message.sender}</h3>
+                    <span>{format(message.createdAt, 'HH:mm:ss')}</span>
                 </MessageHeader>
-                <MessageBody>{props.message.body === '' ? '*Message Deleted*' : props.message.body}</MessageBody>
+                <MessageBody>{message.body === '' ? '*Message Deleted*' : message.body}</MessageBody>
             </MessageContent>
         </MessageContainer>
     );

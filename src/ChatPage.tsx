@@ -33,7 +33,7 @@ const ChatWindow = styled.main`
 
 export interface IChatPageProps {}
 export interface IChatPageState {
-    user: firebase.User | null;
+    user: string | null;
     channels: IChannel[];
     messages: IMessage[];
     currentChannel: IChannel | null;
@@ -43,7 +43,7 @@ export default class ChatPage extends React.Component<IChatPageProps> {
     detachListener?: firebase.Unsubscribe;
 
     state = {
-        user: firebase.auth().currentUser,
+        username: null,
         channels: [],
         messages: [],
         currentChannel: null,
@@ -55,11 +55,10 @@ export default class ChatPage extends React.Component<IChatPageProps> {
 
     getUser = async (user: firebase.User | null) => {
         if (user) {
-            const channels = await ChannelsApi.getChannels(
-                user.email!.replace('@virgilfirebase.com', ''),
-            );
+            const username = user.email!.replace('@virgilfirebase.com', '');
+            const channels = await ChannelsApi.getChannels(username);
 
-            this.setState({ user, channels });
+            this.setState({ username, channels });
         }
     };
 
@@ -74,17 +73,21 @@ export default class ChatPage extends React.Component<IChatPageProps> {
     };
 
     sendMessage = async (message: string) => {
-        ChannelsApi.sendMessage(this.state.currentChannel!, message);
+        ChannelsApi.sendMessage(this.state.currentChannel!, message, this.state.username!);
     };
 
     render() {
-        if (!this.state.user) return <p>...loading</p>;
+        if (!this.state.username) return <p>...loading</p>;
         return (
             <ChatLayout>
                 <SideBar>
                     <button>new conversation</button>
                     <hr />
-                    <Channels onClick={this.loadMessages} channels={this.state.channels} />
+                    <Channels
+                        onClick={this.loadMessages}
+                        username={this.state.username!}
+                        channels={this.state.channels}
+                    />
                 </SideBar>
                 <ChatWindow>
                     <Messages messages={this.state.messages} />

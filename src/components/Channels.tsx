@@ -26,16 +26,18 @@ export interface IChannel {
 
 export interface IChannelsProps {
     channels: IChannel[];
+    username: string;
     onClick: (channel: IChannel) => void;
 }
 
 export default class Channels extends React.Component<IChannelsProps> {
 
     renderItem = (item: IChannel) => {
+        const receiver = item.members.filter(e => e !== this.props.username)[0];
         return (
             <SideBarItem onClick={() => this.props.onClick(item)} key={item.members[1]}>
-                <Avatar src={"https://source.unsplash.com/random/"} />
-                <Username>{item.members[1]}</Username>
+                <Avatar>{receiver.slice(0, 2).toUpperCase()}</Avatar>
+                <Username>{receiver}</Username>
             </SideBarItem>
         );
     };
