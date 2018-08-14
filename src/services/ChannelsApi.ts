@@ -24,8 +24,8 @@ class ChannelsApi {
     }
 
     sendMessage(channel: IChannel, message: string, username: string) {
-        firebase.firestore().runTransaction(t => {
-            return this.updateMessage(t, channel, message, username);
+        firebase.firestore().runTransaction(transaction => {
+            return this.updateMessage(transaction, channel, message, username);
         });
     }
 
@@ -38,6 +38,18 @@ class ChannelsApi {
                 const messages = this.getMessagesFromSnapshot(snapshot);
                 cb(null, messages);
             });
+    }
+
+    async createChannel(receiver: string, username: string) {
+        const userRef = firebase.firestore().collection(FirebaseCollections.Users).doc(receiver)
+        const userDoc = await userRef.get();
+        if (!userDoc.exists) throw new Error('User doesn\'t exist');
+        
+        this.collectionRef.add({
+            count: 0,
+            members: [username, receiver]
+        });
+
     }
 
     private getMessagesFromSnapshot(snapshot: firebase.firestore.QuerySnapshot): IMessage[] {

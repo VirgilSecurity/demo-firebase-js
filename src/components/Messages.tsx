@@ -23,13 +23,21 @@ export interface IMessagesProps {
 }
 
 export default class Messages extends React.Component<IMessagesProps> {
+    ref?: HTMLElement;
+
+    componentDidUpdate() {
+        if (this.ref) {
+            this.ref.scrollTo({ top: this.ref.scrollHeight })
+        }
+    }
+
     render() {
         if (this.props.messages.length === 0) return 'Select Chat'
         const messages = this.props.messages.map(message => (
             <Message key={message.createdAt.getTime()} message={message} />
         ));
 
-        return <MessageWrapper>
+        return <MessageWrapper innerRef={ref => {this.ref = ref}}>
             {messages}
         </MessageWrapper>;
     }

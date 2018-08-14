@@ -76,12 +76,18 @@ export default class ChatPage extends React.Component<IChatPageProps> {
         ChannelsApi.sendMessage(this.state.currentChannel!, message, this.state.username!);
     };
 
+    createChannel = () => {
+        const receiver = prompt('receiver', '');
+        if (!receiver) return alert('Add receiver please');
+        ChannelsApi.createChannel(receiver, this.state.username!);
+    }
+
     render() {
         if (!this.state.username) return <p>...loading</p>;
         return (
             <ChatLayout>
                 <SideBar>
-                    <button>new conversation</button>
+                    <button onClick={this.createChannel}>new conversation</button>
                     <hr />
                     <Channels
                         onClick={this.loadMessages}
