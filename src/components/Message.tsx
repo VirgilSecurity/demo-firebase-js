@@ -41,7 +41,7 @@ export interface IMessageProps {
 export default function Message({ message }: IMessageProps) {
     return (
         <MessageContainer>
-            <MessageAvatar color={getRandomColor()}>{message.sender.slice(0, 2).toUpperCase()}</MessageAvatar>
+            <MessageAvatar>{message.sender.slice(0, 2).toUpperCase()}</MessageAvatar>
             <MessageContent>
                 <MessageHeader>
                     <h3>{message.sender}</h3>

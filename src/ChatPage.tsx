@@ -24,12 +24,12 @@ const Header = styled.header`
     background-color: #9e3621;
     display: flex;
     justify-content: space-between;
-`
+`;
 
 const ChatWorkspace = styled.div`
     display: flex;
     height: calc(100vh - 50px);
-`
+`;
 
 const SideBar = styled.aside`
     width: 250px;
@@ -50,7 +50,7 @@ const ChatWindow = styled.main`
 
 const BottomPrimaryButton = PrimaryButton.extend`
     margin: 10px 0px;
-`
+`;
 
 export interface IChatPageProps {}
 export interface IChatPageState {
@@ -61,9 +61,11 @@ export interface IChatPageState {
 }
 
 class ChatPage extends React.Component<RouteComponentProps<IChatPageProps>> {
-    detachListener?: firebase.Unsubscribe;
+    channelsListener?: firebase.Unsubscribe;
+    messageListener?: firebase.Unsubscribe;
 
     state = {
+        err: null,
         username: null,
         channels: [],
         messages: [],
@@ -78,16 +80,19 @@ class ChatPage extends React.Component<RouteComponentProps<IChatPageProps>> {
         if (user) {
             const username = user.email!.replace('@virgilfirebase.com', '');
             const channels = await ChannelsApi.getChannels(username);
-
+            if (this.channelsListener) this.channelsListener();
+            this.channelsListener = ChannelsApi.listenUpdates(username, (err, channels) => {
+                this.setState({ channels, err });
+            }));
             this.setState({ username, channels });
         }
     };
 
     loadMessages = async (channel: IChannel) => {
         const messages = await MessageApi.loadMessages(channel);
-        if (this.detachListener) this.detachListener();
-        this.detachListener = MessageApi.listenUpdates(channel, (err, updatedMessages) =>
-            this.setState({ messages: updatedMessages }),
+        if (this.messageListener) this.messageListener();
+        this.messageListener = MessageApi.listenUpdates(channel, (err, updatedMessages) =>
+            this.setState({ messages: updatedMessages, err }),
         );
 
         this.setState({ messages, currentChannel: channel });
@@ -102,23 +107,28 @@ class ChatPage extends React.Component<RouteComponentProps<IChatPageProps>> {
         if (!receiver) return alert('Add receiver please');
         try {
             await ChannelsApi.createChannel(receiver, this.state.username!);
-        } catch (e) {   
+        } catch (e) {
             alert(e.message);
         }
-    }
+    };
 
     signOut = () => {
         firebase.auth().signOut();
-        this.props.history.push(Routes.auth)
-    }
+        this.props.history.push(Routes.auth);
+    };
 
     render() {
+        if (this.state.err) alert(this.state.err);
         if (!this.state.username) return null;
         return (
             <ChatLayout>
                 <Header>
-                    <LinkButton color="white" href="https://virgilsecurity.com/" target="_blank">Virgilgram</LinkButton>
-                    <LinkButton color="white" onClick={this.signOut}>logout</LinkButton>
+                    <LinkButton color="white" href="https://virgilsecurity.com/" target="_blank">
+                        Virgilgram
+                    </LinkButton>
+                    <LinkButton color="white" onClick={this.signOut}>
+                        logout
+                    </LinkButton>
                 </Header>
                 <ChatWorkspace>
                     <SideBar>
@@ -127,7 +137,9 @@ class ChatPage extends React.Component<RouteComponentProps<IChatPageProps>> {
                             username={this.state.username!}
                             channels={this.state.channels}
                         />
-                        <BottomPrimaryButton onClick={this.createChannel}>New Channel</BottomPrimaryButton>
+                        <BottomPrimaryButton onClick={this.createChannel}>
+                            New Channel
+                        </BottomPrimaryButton>
                     </SideBar>
                     <ChatWindow>
                         <Messages messages={this.state.messages} />
