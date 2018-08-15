@@ -2,9 +2,9 @@ import * as React from 'react';
 import styled from 'styled-components';
 import AuthForm, { IAuthFormValues } from './components/AuthForm';
 import { withRouter, RouteComponentProps } from 'react-router';
-import { Routes } from './model/Routes';
+import { Routes } from './services/Routes';
 import firebase from 'firebase';
-import { FormikBag, FormikActions } from 'formik';
+import { FormikActions } from 'formik';
 
 const Background = styled.div`
     display: flex;
@@ -15,7 +15,7 @@ const Background = styled.div`
 
 const CenterCard = styled.div`
     display: flex;
-    height: 300px;
+    min-height: 250px;
     width: 400px;
     border: 1px solid #ebebeb;
     border-radius: 3px;
@@ -27,48 +27,43 @@ const CenterCard = styled.div`
 export interface IAuthPageProps {}
 
 export interface IAuthPageState {
-    email: string;
+    username: string;
     password: string;
 }
 
 class AuthPage extends React.Component<RouteComponentProps<IAuthPageProps>, IAuthPageState> {
     state: IAuthPageState = {
-        email: '',
+        username: '',
         password: '',
     };
 
     handleSignUp = (values: IAuthFormValues, actions: FormikActions<IAuthFormValues>) => {
         firebase
             .auth()
-            .createUserWithEmailAndPassword(values.email, values.password)
+            .createUserWithEmailAndPassword(
+                values.username + '@virgilfirebase.com',
+                values.password,
+            )
             .then(() => this.props.history.push(Routes.index))
-            .catch(e =>
-                actions.setErrors({ email: e.message }),
-            );
+            .catch(e => actions.setErrors({ username: e.message }));
     };
 
-    handleSignIn = (values: IAuthFormValues, actions: FormikActions<IAuthFormValues>) =>
+    handleSignIn = (values: IAuthFormValues, actions: FormikActions<IAuthFormValues>) => {
         firebase
             .auth()
-            .signInWithEmailAndPassword(values.email, values.password)
+            .signInWithEmailAndPassword(values.username + '@virgilfirebase.com', values.password)
             .then(() => this.props.history.push(Routes.index))
             .catch(e =>
                 actions.setErrors({
-                    email: e.message,
+                    username: e.message,
                 }),
             );
-
+    };
     render() {
-        const { match } = this.props;
-        const isLogin = match.path === Routes.singIn;
-        const action = isLogin ? 'Sign In' : 'Sign Up';
         return (
             <Background>
                 <CenterCard>
-                    <AuthForm
-                        action={action}
-                        onSubmit={isLogin ? this.handleSignIn : this.handleSignUp}
-                    />
+                    <AuthForm onSignIn={this.handleSignIn} onSignUp={this.handleSignUp} />
                 </CenterCard>
             </Background>
         );

@@ -2,6 +2,12 @@ import * as React from 'react';
 import styled from 'styled-components';
 import { Avatar } from './Primitives';
 
+const ChannelsWrapper = styled.div`
+    flex: 1 0 auto;
+    max-height: calc(100vh - 130px);
+    overflow: scroll;
+`;
+
 const SideBarItem = styled.button`
     height: 80px;
     width: 100%;
@@ -31,7 +37,6 @@ export interface IChannelsProps {
 }
 
 export default class Channels extends React.Component<IChannelsProps> {
-
     renderItem = (item: IChannel) => {
         const receiver = item.members.filter(e => e !== this.props.username)[0];
         return (
@@ -43,6 +48,10 @@ export default class Channels extends React.Component<IChannelsProps> {
     };
 
     render() {
-        return this.props.channels.map(channel => this.renderItem(channel));
+        return (
+            <ChannelsWrapper>
+                {this.props.channels.map(channel => this.renderItem(channel))}
+            </ChannelsWrapper>
+        );
     }
 }

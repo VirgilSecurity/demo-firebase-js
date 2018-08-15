@@ -32,7 +32,6 @@ export default class Messages extends React.Component<IMessagesProps> {
     }
 
     render() {
-        if (this.props.messages.length === 0) return 'Select Chat'
         const messages = this.props.messages.map(message => (
             <Message key={message.createdAt.getTime()} message={message} />
         ));

@@ -6,30 +6,51 @@ import Channels from './components/Channels';
 import { IChannel } from './components/Channels';
 import Messages, { IMessage } from './components/Messages';
 import MessageField from './components/MessageField';
+import MessageApi from './services/MessagesApi';
+import { PrimaryButton, LinkButton } from './components/Primitives';
+import { withRouter, RouteComponentProps } from 'react-router';
+import { Routes } from './services/Routes';
 
 const ChatLayout = styled.div`
-    display: flex;
     max-width: 1024px;
     min-width: 600px;
     margin: 0 auto;
-    border-left: 2px solid lightgrey;
-    border-right: 2px solid lightgrey;
+    background-color: white;
 `;
+
+const Header = styled.header`
+    width: 100%;
+    height: 50px;
+    background-color: #9e3621;
+    display: flex;
+    justify-content: space-between;
+`
+
+const ChatWorkspace = styled.div`
+    display: flex;
+    height: calc(100vh - 50px);
+`
 
 const SideBar = styled.aside`
     width: 250px;
-    height: 100vh;
     border-right: 2px solid grey;
     flex: 0 0 auto;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 `;
 
 const ChatWindow = styled.main`
     width: 100%;
-    height: 100vh;
+    height: 100%;
     overflow: hidden;
     display: flex;
     flex-direction: column;
 `;
+
+const BottomPrimaryButton = PrimaryButton.extend`
+    margin: 10px 0px;
+`
 
 export interface IChatPageProps {}
 export interface IChatPageState {
@@ -39,7 +60,7 @@ export interface IChatPageState {
     currentChannel: IChannel | null;
 }
 
-export default class ChatPage extends React.Component<IChatPageProps> {
+class ChatPage extends React.Component<RouteComponentProps<IChatPageProps>> {
     detachListener?: firebase.Unsubscribe;
 
     state = {
@@ -63,9 +84,9 @@ export default class ChatPage extends React.Component<IChatPageProps> {
     };
 
     loadMessages = async (channel: IChannel) => {
-        const messages = await ChannelsApi.loadMessages(channel);
+        const messages = await MessageApi.loadMessages(channel);
         if (this.detachListener) this.detachListener();
-        this.detachListener = ChannelsApi.listenUpdates(channel, (err, updatedMessages) =>
+        this.detachListener = MessageApi.listenUpdates(channel, (err, updatedMessages) =>
             this.setState({ messages: updatedMessages }),
         );
 
@@ -73,33 +94,49 @@ export default class ChatPage extends React.Component<IChatPageProps> {
     };
 
     sendMessage = async (message: string) => {
-        ChannelsApi.sendMessage(this.state.currentChannel!, message, this.state.username!);
+        MessageApi.sendMessage(this.state.currentChannel!, message, this.state.username!);
     };
 
-    createChannel = () => {
+    createChannel = async () => {
         const receiver = prompt('receiver', '');
         if (!receiver) return alert('Add receiver please');
-        ChannelsApi.createChannel(receiver, this.state.username!);
+        try {
+            await ChannelsApi.createChannel(receiver, this.state.username!);
+        } catch (e) {   
+            alert(e.message);
+        }
+    }
+
+    signOut = () => {
+        firebase.auth().signOut();
+        this.props.history.push(Routes.auth)
     }
 
     render() {
-        if (!this.state.username) return <p>...loading</p>;
+        if (!this.state.username) return null;
         return (
             <ChatLayout>
-                <SideBar>
-                    <button onClick={this.createChannel}>new conversation</button>
-                    <hr />
-                    <Channels
-                        onClick={this.loadMessages}
-                        username={this.state.username!}
-                        channels={this.state.channels}
-                    />
-                </SideBar>
-                <ChatWindow>
-                    <Messages messages={this.state.messages} />
-                    <MessageField handleSend={this.sendMessage} />
-                </ChatWindow>
+                <Header>
+                    <LinkButton color="white" href="https://virgilsecurity.com/" target="_blank">Virgilgram</LinkButton>
+                    <LinkButton color="white" onClick={this.signOut}>logout</LinkButton>
+                </Header>
+                <ChatWorkspace>
+                    <SideBar>
+                        <Channels
+                            onClick={this.loadMessages}
+                            username={this.state.username!}
+                            channels={this.state.channels}
+                        />
+                        <BottomPrimaryButton onClick={this.createChannel}>New Channel</BottomPrimaryButton>
+                    </SideBar>
+                    <ChatWindow>
+                        <Messages messages={this.state.messages} />
+                        <MessageField handleSend={this.sendMessage} />
+                    </ChatWindow>
+                </ChatWorkspace>
             </ChatLayout>
         );
     }
 }
+
+export default withRouter(ChatPage);

@@ -1,5 +1,4 @@
 export enum Routes {
     index = '/',
-    singIn = '/signIn',
-    signUp = '/signUp',
+    auth = '/auth',
 }

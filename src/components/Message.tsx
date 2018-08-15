@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import { Avatar } from './Primitives';
 import { IMessage } from './Messages';
 import format from 'date-fns/format';
-import { getRandomColor } from '../utils/strings';
 
 const MessageContainer = styled.div`
     width: 100%;
