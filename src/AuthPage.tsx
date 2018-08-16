@@ -5,6 +5,7 @@ import { withRouter, RouteComponentProps } from 'react-router';
 import { Routes } from './services/Routes';
 import firebase from 'firebase';
 import { FormikActions } from 'formik';
+import CoreApi from './services/CoreApi';
 
 const Background = styled.div`
     display: flex;
@@ -37,27 +38,22 @@ class AuthPage extends React.Component<RouteComponentProps<IAuthPageProps>, IAut
         password: '',
     };
 
-    handleSignUp = (values: IAuthFormValues, actions: FormikActions<IAuthFormValues>) => {
-        firebase
-            .auth()
-            .createUserWithEmailAndPassword(
-                values.username + '@virgilfirebase.com',
-                values.password,
-            )
-            .then(() => this.props.history.push(Routes.index))
-            .catch(e => actions.setErrors({ username: e.message }));
+    handleSignUp = async (values: IAuthFormValues, actions: FormikActions<IAuthFormValues>) => {
+        try {
+            await CoreApi.signUp(values.username, values.password);
+            this.props.history.push(Routes.index);
+        } catch (e) {
+            actions.setErrors({ username: e.message });
+        }
     };
 
-    handleSignIn = (values: IAuthFormValues, actions: FormikActions<IAuthFormValues>) => {
-        firebase
-            .auth()
-            .signInWithEmailAndPassword(values.username + '@virgilfirebase.com', values.password)
-            .then(() => this.props.history.push(Routes.index))
-            .catch(e =>
-                actions.setErrors({
-                    username: e.message,
-                }),
-            );
+    handleSignIn = async (values: IAuthFormValues, actions: FormikActions<IAuthFormValues>) => {
+        try {
+            await CoreApi.signIn(values.username, values.password);
+            this.props.history.push(Routes.index);
+        } catch (e) {
+            actions.setErrors({ username: e.message });
+        }
     };
     render() {
         return (

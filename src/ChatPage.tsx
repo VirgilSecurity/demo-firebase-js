@@ -1,9 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
 import firebase from 'firebase';
-import ChannelsApi from './services/ChannelsApi';
+import ChannelsApi, { IChannel } from './services/ChannelsApi';
 import Channels from './components/Channels';
-import { IChannel } from './components/Channels';
 import Messages, { IMessage } from './components/Messages';
 import MessageField from './components/MessageField';
 import MessageApi from './services/MessagesApi';
@@ -46,6 +45,8 @@ const ChatWindow = styled.main`
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
 `;
 
 const BottomPrimaryButton = PrimaryButton.extend`
@@ -83,12 +84,15 @@ class ChatPage extends React.Component<RouteComponentProps<IChatPageProps>> {
             if (this.channelsListener) this.channelsListener();
             this.channelsListener = ChannelsApi.listenUpdates(username, (err, channels) => {
                 this.setState({ channels, err });
-            }));
+            });
             this.setState({ username, channels });
+        } else {
+            if (this.channelsListener) this.channelsListener();
         }
     };
 
     loadMessages = async (channel: IChannel) => {
+        this.setState({ messages: [] });
         const messages = await MessageApi.loadMessages(channel);
         if (this.messageListener) this.messageListener();
         this.messageListener = MessageApi.listenUpdates(channel, (err, updatedMessages) =>
@@ -142,8 +146,14 @@ class ChatPage extends React.Component<RouteComponentProps<IChatPageProps>> {
                         </BottomPrimaryButton>
                     </SideBar>
                     <ChatWindow>
-                        <Messages messages={this.state.messages} />
-                        <MessageField handleSend={this.sendMessage} />
+                        {this.state.currentChannel ? (
+                            <>
+                                <Messages messages={this.state.messages} />
+                                <MessageField handleSend={this.sendMessage} />
+                            </>
+                        ) : (
+                            'Please Select Channel'
+                        )}
                     </ChatWindow>
                 </ChatWorkspace>
             </ChatLayout>

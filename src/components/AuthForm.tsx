@@ -59,12 +59,14 @@ export default class AuthForm extends React.Component<IAuthFormProps, IAuthFormS
                 <Buttons>
                     <PrimaryButton
                         disabled={isDisabled}
+                        type="submit"
                         onClick={() => this.setState({ isSingInClicked: true })}
                     >
                         Sign In
                     </PrimaryButton>
                     <PrimaryButton
                         disabled={isDisabled}
+                        type="submit"
                         onClick={() => this.setState({ isSingInClicked: false })}
                     >
                         Sign Up

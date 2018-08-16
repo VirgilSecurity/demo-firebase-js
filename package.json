@@ -18,7 +18,9 @@
     "react-dom": "^16.4.1",
     "react-hot-loader": "next",
     "react-router-dom": "^4.3.1",
-    "styled-components": "^3.3.3"
+    "styled-components": "^3.3.3",
+    "virgil-crypto": "^3.0.0",
+    "virgil-sdk": "^5.0.0"
   },
   "devDependencies": {
     "@types/react": "^16.4.7",
@@ -39,7 +41,7 @@
     "typescript": "^3.0.1"
   },
   "scripts": {
-    "start": "parcel src/index.html",
+    "start": "parcel src/index.html --",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

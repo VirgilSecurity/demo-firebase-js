@@ -1,7 +1,6 @@
-import { IChannel } from '../components/Channels';
 import { IMessage } from '../components/Messages';
-import ChannelsApi from './ChannelsApi';
-import { FirebaseCollections } from './FIrebaseCollections';
+import ChannelsApi, { IChannel } from './ChannelsApi';
+import { FirebaseCollections } from './FirebaseCollections';
 import firebase from 'firebase';
 
 class MessageApi {
