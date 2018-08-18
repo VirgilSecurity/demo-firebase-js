@@ -9,6 +9,7 @@ import MessageApi from './services/MessagesApi';
 import { PrimaryButton, LinkButton } from './components/Primitives';
 import { withRouter, RouteComponentProps } from 'react-router';
 import { Routes } from './services/Routes';
+import CoreApi from './services/CoreApi';
 
 const ChatLayout = styled.div`
     max-width: 1024px;
@@ -55,52 +56,25 @@ const BottomPrimaryButton = PrimaryButton.extend`
 
 export interface IChatPageProps {}
 export interface IChatPageState {
-    user: string | null;
+    error: null | Error;
+    username: string | null;
     channels: IChannel[];
     messages: IMessage[];
     currentChannel: IChannel | null;
 }
 
-class ChatPage extends React.Component<RouteComponentProps<IChatPageProps>> {
+class ChatPage extends React.Component<RouteComponentProps<IChatPageProps>, IChatPageState> {
     channelsListener?: firebase.Unsubscribe;
     messageListener?: firebase.Unsubscribe;
 
-    state = {
-        err: null,
-        username: null,
-        channels: [],
-        messages: [],
-        currentChannel: null,
-    };
+    state = CoreApi.state.state;
 
-    async componentDidMount() {
-        firebase.auth().onAuthStateChanged(this.getUser);
+    componentDidMount() {
+        CoreApi.state.on('change', this.setState.bind(this));
+        // tslint:disable-next-line:no-any
+        (window as any).$api = CoreApi;
+
     }
-
-    getUser = async (user: firebase.User | null) => {
-        if (user) {
-            const username = user.email!.replace('@virgilfirebase.com', '');
-            const channels = await ChannelsApi.getChannels(username);
-            if (this.channelsListener) this.channelsListener();
-            this.channelsListener = ChannelsApi.listenUpdates(username, (err, channels) => {
-                this.setState({ channels, err });
-            });
-            this.setState({ username, channels });
-        } else {
-            if (this.channelsListener) this.channelsListener();
-        }
-    };
-
-    loadMessages = async (channel: IChannel) => {
-        this.setState({ messages: [] });
-        const messages = await MessageApi.loadMessages(channel);
-        if (this.messageListener) this.messageListener();
-        this.messageListener = MessageApi.listenUpdates(channel, (err, updatedMessages) =>
-            this.setState({ messages: updatedMessages, err }),
-        );
-
-        this.setState({ messages, currentChannel: channel });
-    };
 
     sendMessage = async (message: string) => {
         MessageApi.sendMessage(this.state.currentChannel!, message, this.state.username!);
@@ -122,7 +96,7 @@ class ChatPage extends React.Component<RouteComponentProps<IChatPageProps>> {
     };
 
     render() {
-        if (this.state.err) alert(this.state.err);
+        if (this.state.error) alert(this.state.error);
         if (!this.state.username) return null;
         return (
             <ChatLayout>
@@ -137,7 +111,7 @@ class ChatPage extends React.Component<RouteComponentProps<IChatPageProps>> {
                 <ChatWorkspace>
                     <SideBar>
                         <Channels
-                            onClick={this.loadMessages}
+                            onClick={CoreApi.syncMessages}
                             username={this.state.username!}
                             channels={this.state.channels}
                         />
@@ -149,7 +123,7 @@ class ChatPage extends React.Component<RouteComponentProps<IChatPageProps>> {
                         {this.state.currentChannel ? (
                             <>
                                 <Messages messages={this.state.messages} />
-                                <MessageField handleSend={this.sendMessage} />
+                                <MessageField handleSend={CoreApi.sendMessage} />
                             </>
                         ) : (
                             'Please Select Channel'

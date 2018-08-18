@@ -53,6 +53,7 @@ class AuthPage extends React.Component<RouteComponentProps<IAuthPageProps>, IAut
             this.props.history.push(Routes.index);
         } catch (e) {
             actions.setErrors({ username: e.message });
+            throw e;
         }
     };
     render() {

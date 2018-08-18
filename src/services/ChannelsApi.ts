@@ -1,3 +1,4 @@
+import { IChannel } from './ChannelsApi';
 import { FirebaseCollections } from './FIrebaseCollections';
 import firebase from 'firebase';
 
@@ -10,11 +11,11 @@ export interface IChannel {
 class ChannelsApi {
     collectionRef = firebase.firestore().collection(FirebaseCollections.Channels);
 
-    getChannels(user: string) {
+    getChannels(user: string): Promise<IChannel[]> {
         return this.collectionRef
             .where('members', 'array-contains', user)
             .get()
-            .then(querySnapshot => querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id })));
+            .then(this.getChannelsFromSnapshot);
     }
 
     listenUpdates(username: string, cb: (error: Error | null, channels: IChannel[]) => void) {
@@ -40,9 +41,15 @@ class ChannelsApi {
         });
     }
 
+    getReceiverUsername(sender: string, channel: IChannel) {
+        const receiver = channel.members.filter(e => e !== sender)[0];
+        if (!receiver) throw new Error('receiver');
+        return receiver;
+    }
+
     private getChannelsFromSnapshot(snapshot: firebase.firestore.QuerySnapshot): IChannel[] {
         return snapshot.docs.map(d => ({
-            ...d.data(),
+            ...d.data() as IChannel,
             id: d.id,
         })) as IChannel[];
     }

@@ -1,5 +1,6 @@
 {
   "presets": ["env", "react", "es2017"],
+  "sourceMaps": "inline",
   "plugins": [
     "react-hot-loader/babel", ["transform-runtime",
       {
