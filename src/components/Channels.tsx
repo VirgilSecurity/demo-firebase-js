@@ -1,7 +1,7 @@
 import * as React from 'react';
 import styled from 'styled-components';
 import { Avatar } from './Primitives';
-import { IChannel } from '../services/ChannelListModel';
+import ChannelModel, { IChannel } from '../services/ChannelModel';
 
 const ChannelsWrapper = styled.div`
     flex: 1 0 auto;
@@ -32,8 +32,9 @@ export interface IChannelsProps {
 }
 
 export default class Channels extends React.Component<IChannelsProps> {
-    renderItem = (item: IChannel) => {
+    renderItem = (item: ChannelModel) => {
         const receiver = item.members.filter(e => e !== this.props.username)[0];
+        console.log('receiver', receiver, item.members, item);
         return (
             <SideBarItem onClick={() => this.props.onClick(item)} key={item.id}>
                 <Avatar>{receiver.slice(0, 2).toUpperCase()}</Avatar>

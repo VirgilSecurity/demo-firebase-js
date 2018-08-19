@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import firebase from 'firebase';
-import ChannelListModel, { IChannel } from '../services/ChannelListModel';
+import { IChannel } from '../services/ChannelListModel';
 import Channels from '../components/Channels';
 import Messages, { IMessage } from '../components/Messages';
 import MessageField from '../components/MessageField';
@@ -69,7 +69,7 @@ export default class ChatPage extends React.Component<IChatPageProps, IChatPageS
     messageListener?: firebase.Unsubscribe;
 
     model = this.props.model;
-    state = this.model.state.state;
+    state = this.model.state.store;
 
     componentDidMount() {
         this.model.state.on('change', this.setState.bind(this));
@@ -85,11 +85,13 @@ export default class ChatPage extends React.Component<IChatPageProps, IChatPageS
         const receiver = prompt('receiver', '');
         if (!receiver) return alert('Add receiver please');
         try {
-            await this.model.channelsList.createChannel(receiver, this.state.username!);
+            await this.model.channelsList.createChannel(receiver, this.model.username);
         } catch (e) {
             alert(e.message);
         }
     };
+
+    selectChannel = (channelInfo: IChannel) => this.model.listenMessages(channelInfo);
 
     render() {
         if (this.state.error) alert(this.state.error);
@@ -106,7 +108,7 @@ export default class ChatPage extends React.Component<IChatPageProps, IChatPageS
                 <ChatLayout>
                     <SideBar>
                         <Channels
-                            onClick={this.model.syncMessages}
+                            onClick={this.selectChannel}
                             username={this.state.username!}
                             channels={this.state.channels}
                         />

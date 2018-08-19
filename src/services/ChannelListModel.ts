@@ -1,28 +1,42 @@
-import { IChannel } from './ChannelListModel';
-import { FirebaseCollections } from './FIrebaseCollections';
+import { FirebaseCollections } from './FirebaseCollections';
 import firebase from 'firebase';
-
-export interface IChannel {
-    id: string;
-    count: number;
-    members: string[];
-}
+import { IMessage } from '../components/Messages';
+import ChannelModel, { IChannel } from './ChannelModel';
 
 export default class ChannelListModel {
-    collectionRef = firebase.firestore().collection(FirebaseCollections.Channels);
+    static collectionRef = firebase.firestore().collection(FirebaseCollections.Channels);
+    channels: ChannelModel[] = [];
+    messages: IMessage[] = [];
 
-    getChannels(user: string): Promise<IChannel[]> {
-        return this.collectionRef
+    constructor(public username: string) {}
+
+    getChannel(channelId: string) {
+        const channel = this.channels.find(e => e.id === channelId);
+        if (!channel) throw Error('Channel not found');
+        return channel;
+    }
+
+    async loadChannels(user: string): Promise<IChannel[]> {
+        const channels = await ChannelListModel.collectionRef
             .where('members', 'array-contains', user)
             .get()
-            .then(this.getChannelsFromSnapshot);
+            .then(s => s.docs.map(this.getChannelFromSnapshot));
+
+        this.channels = channels.map(c => new ChannelModel(c, user));
+        return channels;
     }
 
     listenUpdates(username: string, cb: (error: Error | null, channels: IChannel[]) => void) {
-        return this.collectionRef
+        return ChannelListModel.collectionRef
             .where('members', 'array-contains', username)
             .onSnapshot(snapshot => {
-                const channels = this.getChannelsFromSnapshot(snapshot);
+                const channels = snapshot.docs.map(this.getChannelFromSnapshot);
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === "added") {
+                        const channel = this.getChannelFromSnapshot(change.doc);
+                        this.channels.push(new ChannelModel(channel, this.username));
+                    }
+                });
                 cb(null, channels);
             });
     }
@@ -32,25 +46,24 @@ export default class ChannelListModel {
             .firestore()
             .collection(FirebaseCollections.Users)
             .doc(receiver);
+    
         const userDoc = await userRef.get();
         if (!userDoc.exists) throw new Error("User doesn't exist");
-
-        this.collectionRef.add({
+        
+        const channel = await ChannelListModel.collectionRef.add({
             count: 0,
             members: [username, receiver],
         });
+
+        // userRef.update({
+        //     channels: userDoc.data()!.channels.push(channel.id)
+        // })
     }
 
-    getReceiverUsername(sender: string, channel: IChannel) {
-        const receiver = channel.members.filter(e => e !== sender)[0];
-        if (!receiver) throw new Error('receiver');
-        return receiver;
-    }
-
-    private getChannelsFromSnapshot(snapshot: firebase.firestore.QuerySnapshot): IChannel[] {
-        return snapshot.docs.map(d => ({
-            ...d.data() as IChannel,
-            id: d.id,
-        })) as IChannel[];
+    private getChannelFromSnapshot(snapshot: firebase.firestore.QueryDocumentSnapshot): IChannel {
+        return {
+            ...snapshot.data() as IChannel,
+            id: snapshot.id,
+        } as IChannel;
     }
 }

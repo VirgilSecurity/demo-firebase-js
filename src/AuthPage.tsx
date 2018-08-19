@@ -3,9 +3,7 @@ import styled from 'styled-components';
 import AuthForm, { IAuthFormValues } from './components/AuthForm';
 import { withRouter, RouteComponentProps } from 'react-router';
 import { Routes } from './services/Routes';
-import firebase from 'firebase';
 import { FormikActions } from 'formik';
-import ChatModel from './services/ChatModel';
 import UserApi from './services/UserApi';
 
 const Background = styled.div`
@@ -57,6 +55,7 @@ class AuthPage extends React.Component<RouteComponentProps<IAuthPageProps>, IAut
             throw e;
         }
     };
+    
     render() {
         return (
             <Background>

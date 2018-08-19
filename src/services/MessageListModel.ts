@@ -1,9 +1,14 @@
 import { IMessage } from '../components/Messages';
-import ChannelListModel, { IChannel } from './ChannelListModel';
+import ChannelListModel from './ChannelListModel';
 import { FirebaseCollections } from './FirebaseCollections';
 import firebase from 'firebase';
+import ChannelModel, { IChannel } from './ChannelModel';
 
-class MessageApi {
+export default class MessagesListModel {
+
+    constructor(public channel: ChannelModel, public sender: string) {
+
+    }
 
     async loadMessages(channel: IChannel) {
         const snapshot = await ChannelListModel.collectionRef
@@ -15,15 +20,15 @@ class MessageApi {
         return this.getMessagesFromSnapshot(snapshot);
     }
 
-    sendMessage(channel: IChannel, message: string, username: string) {
+    sendMessage(message: string) {
         firebase.firestore().runTransaction(transaction => {
-            return this.updateMessage(transaction, channel, message, username);
+            return this.updateMessage(transaction, this.channel, message, this.sender);
         });
     }
 
-    listenUpdates(channel: IChannel, cb: (error: Error | null, messages: IMessage[]) => void) {
+    listenUpdates(id: string, cb: (error: Error | null, messages: IMessage[]) => void) {
         return ChannelListModel.collectionRef
-            .doc(channel.id)
+            .doc(id)
             .collection(FirebaseCollections.Messages)
             .orderBy('createdAt', 'asc')
             .onSnapshot(snapshot => {
@@ -64,5 +69,3 @@ class MessageApi {
         return transaction;
     };
 }
-
-export default new MessageApi;

@@ -55,10 +55,10 @@ export default class VirgilApi {
     }
 
     async encrypt(message: string, senderIdentity: string, recipientIdentity: string) {
-        const [senderCards, recipientCards] = [
-            await this.cardManager.searchCards(senderIdentity),
-            await this.cardManager.searchCards(recipientIdentity),
-        ];
+        const [senderCards, recipientCards] = await Promise.all([
+            this.cardManager.searchCards(senderIdentity),
+            this.cardManager.searchCards(recipientIdentity),
+        ]);
 
         const cards = [...senderCards, ...recipientCards];
 

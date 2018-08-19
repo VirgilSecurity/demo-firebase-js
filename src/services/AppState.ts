@@ -2,7 +2,7 @@ import EventEmitter from "wolfy87-eventemitter";
 import { IChatPageState } from "../components/ChatWindow";
 
 export default class AppState extends EventEmitter {
-    state: IChatPageState = {
+    store: IChatPageState = {
         error: null,
         username: null,
         currentChannel: null,
@@ -11,7 +11,7 @@ export default class AppState extends EventEmitter {
     }
 
     setState(state: Partial<IChatPageState>) {
-        const newState = Object.assign(this.state, state);
+        const newState = Object.assign(this.store, state);
         this.emit('change', newState);
     }
 }
