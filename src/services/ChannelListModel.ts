@@ -1,4 +1,4 @@
-import { IChannel } from './ChannelsApi';
+import { IChannel } from './ChannelListModel';
 import { FirebaseCollections } from './FIrebaseCollections';
 import firebase from 'firebase';
 
@@ -8,7 +8,7 @@ export interface IChannel {
     members: string[];
 }
 
-class ChannelsApi {
+export default class ChannelListModel {
     collectionRef = firebase.firestore().collection(FirebaseCollections.Channels);
 
     getChannels(user: string): Promise<IChannel[]> {
@@ -54,5 +54,3 @@ class ChannelsApi {
         })) as IChannel[];
     }
 }
-
-export default new ChannelsApi();

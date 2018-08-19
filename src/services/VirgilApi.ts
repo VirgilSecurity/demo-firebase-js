@@ -100,7 +100,6 @@ export default class VirgilApi {
         const privateKeyData = await this.keyStorage.load(this.identity);
         if (!privateKeyData) throw new Error('sender private key not found');
         const privateKey = this.virgilCrypto.importPrivateKey(privateKeyData);
-        console.log('this.identity', this.identity, privateKey);
 
         const decryptedData = this.virgilCrypto.decrypt(message, privateKey);
 

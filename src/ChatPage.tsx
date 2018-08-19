@@ -1,137 +1,57 @@
 import React from 'react';
-import styled from 'styled-components';
 import firebase from 'firebase';
-import ChannelsApi, { IChannel } from './services/ChannelsApi';
-import Channels from './components/Channels';
-import Messages, { IMessage } from './components/Messages';
-import MessageField from './components/MessageField';
-import MessageApi from './services/MessagesApi';
-import { PrimaryButton, LinkButton } from './components/Primitives';
-import { withRouter, RouteComponentProps } from 'react-router';
+import { withRouter, RouteComponentProps, Redirect } from 'react-router';
 import { Routes } from './services/Routes';
-import CoreApi from './services/CoreApi';
+import ChatWindow from './components/ChatWindow';
+import ChatModel from './services/ChatModel';
+import UserApi, { UserInfo } from './services/UserApi';
 
-const ChatLayout = styled.div`
-    max-width: 1024px;
-    min-width: 600px;
-    margin: 0 auto;
-    background-color: white;
-`;
+export interface IChatPageProps extends RouteComponentProps<{}> {}
 
-const Header = styled.header`
-    width: 100%;
-    height: 50px;
-    background-color: #9e3621;
-    display: flex;
-    justify-content: space-between;
-`;
-
-const ChatWorkspace = styled.div`
-    display: flex;
-    height: calc(100vh - 50px);
-`;
-
-const SideBar = styled.aside`
-    width: 250px;
-    border-right: 2px solid grey;
-    flex: 0 0 auto;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-`;
-
-const ChatWindow = styled.main`
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-`;
-
-const BottomPrimaryButton = PrimaryButton.extend`
-    margin: 10px 0px;
-`;
-
-export interface IChatPageProps {}
 export interface IChatPageState {
-    error: null | Error;
-    username: string | null;
-    channels: IChannel[];
-    messages: IMessage[];
-    currentChannel: IChannel | null;
+    model: ChatModel | null;
+    isRedirected: boolean;
 }
 
-class ChatPage extends React.Component<RouteComponentProps<IChatPageProps>, IChatPageState> {
-    channelsListener?: firebase.Unsubscribe;
-    messageListener?: firebase.Unsubscribe;
+class ChatPage extends React.Component<IChatPageProps, IChatPageState> {
 
-    state = CoreApi.state.state;
-
-    componentDidMount() {
-        CoreApi.state.on('change', this.setState.bind(this));
-        // tslint:disable-next-line:no-any
-        (window as any).$api = CoreApi;
-
+    state = {
+        isRedirected: false,
+        model: null
     }
 
-    sendMessage = async (message: string) => {
-        MessageApi.sendMessage(this.state.currentChannel!, message, this.state.username!);
-    };
+    constructor(props: IChatPageProps) {
+        super(props);
+        UserApi.subscribeOnAuthChange(this.createChatModel)
+    }
 
-    createChannel = async () => {
-        const receiver = prompt('receiver', '');
-        if (!receiver) return alert('Add receiver please');
-        try {
-            await ChannelsApi.createChannel(receiver, this.state.username!);
-        } catch (e) {
-            alert(e.message);
+    componentDidMount() {
+        if (UserApi.userInfo) this.createChatModel(UserApi.userInfo);
+        else UserApi.subscribeOnAuthChange(this.createChatModel);
+    }
+    
+    componentWillUnmount() {
+        UserApi.subscribeOnAuthChange(null);
+    }
+
+    createChatModel = (userInfo: UserInfo) => {
+        if (userInfo) {
+            const { username, token } = userInfo;
+            this.setState({ model: new ChatModel(username, token) })
+        } else {
+            this.setState({ isRedirected: true })
         }
-    };
+    }
 
     signOut = () => {
-        firebase.auth().signOut();
         this.props.history.push(Routes.auth);
+        firebase.auth().signOut();
     };
 
     render() {
-        if (this.state.error) alert(this.state.error);
-        if (!this.state.username) return null;
-        return (
-            <ChatLayout>
-                <Header>
-                    <LinkButton color="white" href="https://virgilsecurity.com/" target="_blank">
-                        Virgilgram
-                    </LinkButton>
-                    <LinkButton color="white" onClick={this.signOut}>
-                        logout
-                    </LinkButton>
-                </Header>
-                <ChatWorkspace>
-                    <SideBar>
-                        <Channels
-                            onClick={CoreApi.syncMessages}
-                            username={this.state.username!}
-                            channels={this.state.channels}
-                        />
-                        <BottomPrimaryButton onClick={this.createChannel}>
-                            New Channel
-                        </BottomPrimaryButton>
-                    </SideBar>
-                    <ChatWindow>
-                        {this.state.currentChannel ? (
-                            <>
-                                <Messages messages={this.state.messages} />
-                                <MessageField handleSend={CoreApi.sendMessage} />
-                            </>
-                        ) : (
-                            'Please Select Channel'
-                        )}
-                    </ChatWindow>
-                </ChatWorkspace>
-            </ChatLayout>
-        );
+        if (this.state.isRedirected) return <Redirect to={Routes.auth} />
+        if (!this.state.model) return null;
+        return <ChatWindow signOut={this.signOut} model={this.state.model!} />;
     }
 }
 

@@ -1,5 +1,5 @@
 import EventEmitter from "wolfy87-eventemitter";
-import { IChatPageState } from "../ChatPage";
+import { IChatPageState } from "../components/ChatWindow";
 
 export default class AppState extends EventEmitter {
     state: IChatPageState = {

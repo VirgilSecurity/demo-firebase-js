@@ -1,7 +1,7 @@
 import * as React from 'react';
 import styled from 'styled-components';
 import { Avatar } from './Primitives';
-import { IChannel } from '../services/ChannelsApi';
+import { IChannel } from '../services/ChannelListModel';
 
 const ChannelsWrapper = styled.div`
     flex: 1 0 auto;

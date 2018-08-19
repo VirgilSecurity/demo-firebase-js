@@ -1,12 +1,12 @@
 import { IMessage } from '../components/Messages';
-import ChannelsApi, { IChannel } from './ChannelsApi';
+import ChannelListModel, { IChannel } from './ChannelListModel';
 import { FirebaseCollections } from './FirebaseCollections';
 import firebase from 'firebase';
 
 class MessageApi {
 
     async loadMessages(channel: IChannel) {
-        const snapshot = await ChannelsApi.collectionRef
+        const snapshot = await ChannelListModel.collectionRef
             .doc(channel.id)
             .collection(FirebaseCollections.Messages)
             .orderBy('createdAt', 'asc')
@@ -22,7 +22,7 @@ class MessageApi {
     }
 
     listenUpdates(channel: IChannel, cb: (error: Error | null, messages: IMessage[]) => void) {
-        return ChannelsApi.collectionRef
+        return ChannelListModel.collectionRef
             .doc(channel.id)
             .collection(FirebaseCollections.Messages)
             .orderBy('createdAt', 'asc')
@@ -44,7 +44,7 @@ class MessageApi {
         message: string,
         username: string
     ) => {
-        const channelRef = ChannelsApi.collectionRef.doc(channel.id);
+        const channelRef = ChannelListModel.collectionRef.doc(channel.id);
         const snapshot = await transaction.get(channelRef);
         const messagesCount: number = snapshot.data()!.count + 1;
         const messagesCollectionRef = channelRef
