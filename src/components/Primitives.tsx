@@ -27,6 +27,21 @@ export const PrimaryButton = Button.extend`
     }
 `;
 
+export const SecondaryButton = Button.extend`
+    --webkit-appearance: none;
+    border: 0;
+    display: inline-block;
+    padding: 16px 19px;
+    color: #9e3621;
+    font-family: Muller;
+    text-transform: uppercase;
+    text-decoration: none;
+
+    &:disabled {
+        color: #ebebeb;
+    }
+`;
+
 export const Avatar = styled.div`
     height: 50px;
     width: 50px;

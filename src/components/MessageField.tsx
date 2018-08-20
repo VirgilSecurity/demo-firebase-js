@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { SecondaryButton } from '../components/Primitives';
 
 export const inputHeight = '100px';
 
@@ -14,14 +15,7 @@ const MessageFieldContainer = styled.form`
 const MessageFieldElement = styled.textarea`
     flex: 1 1 auto;
     border: 0;
-    border-bottom: 1px solid blue;
-`;
-
-const SendButton = styled.button`
-    border: 0;
-    background: 0;
-    cursor: pointer;
-    font-size: 18px;
+    border-bottom: 2px solid #9e3621;
 `;
 
 export interface IMessageFieldProps {
@@ -47,14 +41,26 @@ export default class MessageField extends React.Component<IMessageFieldProps, IM
         this.setState({ message: e.target.value });
     };
 
+    handleEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.keyCode === 13 && !e.ctrlKey) {
+            e.preventDefault();
+            this.props.handleSend(this.state.message)
+            this.setState({ message: '' });
+        } else if (e.ctrlKey) {
+            this.setState(state => ({ message: state.message + '\n' }));
+        }
+    }
+
     render() {
         return (
             <MessageFieldContainer onSubmit={this.handleSend}>
                 <MessageFieldElement
+                    placeholder="write a message"
                     value={this.state.message}
                     onChange={this.handleMessageChange}
+                    onKeyUp={this.handleEnter}
                 />
-                <SendButton disabled={!this.state.message.length}>send</SendButton>
+                <SecondaryButton disabled={!this.state.message.length}>send</SecondaryButton>
             </MessageFieldContainer>
         );
     }

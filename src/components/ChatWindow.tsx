@@ -51,6 +51,10 @@ const BottomPrimaryButton = PrimaryButton.extend`
     margin: 10px 0px;
 `;
 
+const RightSide = styled.span`
+    color: white;
+`
+
 export interface IChatPageProps {
     model: ChatModel;
     signOut: () => void;
@@ -101,9 +105,12 @@ export default class ChatPage extends React.Component<IChatPageProps, IChatPageS
                     <LinkButton color="white" href="https://virgilsecurity.com/" target="_blank">
                         Virgilgram
                     </LinkButton>
-                    <LinkButton color="white" onClick={this.props.signOut}>
-                        logout
-                    </LinkButton>
+                    <RightSide>
+                        {this.state.username}
+                        <LinkButton color="white" onClick={this.props.signOut}>
+                            logout
+                        </LinkButton>
+                    </RightSide>
                 </Header>
                 <ChatLayout>
                     <SideBar>

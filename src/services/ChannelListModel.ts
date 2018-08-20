@@ -55,9 +55,9 @@ export default class ChannelListModel {
             members: [username, receiver],
         });
 
-        // userRef.update({
-        //     channels: userDoc.data()!.channels.push(channel.id)
-        // })
+        userRef.update({
+            channels: userDoc.data()!.channels.push(channel.id)
+        })
     }
 
     private getChannelFromSnapshot(snapshot: firebase.firestore.QueryDocumentSnapshot): IChannel {
