@@ -20,6 +20,7 @@
     "react-router-dom": "^4.3.1",
     "styled-components": "^3.3.3",
     "virgil-crypto": "^3.0.0",
+    "virgil-pythia": "^0.2.2",
     "virgil-sdk": "^5.0.0",
     "wolfy87-eventemitter": "^5.2.5"
   },

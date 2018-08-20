@@ -1,7 +1,7 @@
 import * as React from 'react';
 import styled from 'styled-components';
 import { Avatar } from './Primitives';
-import ChannelModel, { IChannel } from '../services/ChannelModel';
+import { IChannel } from '../services/ChannelModel';
 
 const ChannelsWrapper = styled.div`
     flex: 1 0 auto;
@@ -32,7 +32,7 @@ export interface IChannelsProps {
 }
 
 export default class Channels extends React.Component<IChannelsProps> {
-    renderItem = (item: ChannelModel) => {
+    renderItem = (item: IChannel) => {
         const receiver = item.members.filter(e => e !== this.props.username)[0];
 
         return (

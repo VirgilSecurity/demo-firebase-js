@@ -1,5 +1,6 @@
-import { VirgilCrypto, VirgilCardCrypto, VirgilPublicKey } from 'virgil-crypto';
-import { VirgilCardVerifier, CallbackJwtProvider, CardManager, KeyStorage } from 'virgil-sdk';
+import { VirgilPythiaCrypto, VirgilCrypto, VirgilCardCrypto, VirgilPublicKey } from 'virgil-crypto/dist/virgil-crypto-pythia.es';
+import { VirgilCardVerifier, CachingJwtProvider, CardManager, KeyStorage } from 'virgil-sdk';
+import { createBrainKey, BrainKey } from 'virgil-pythia';
 
 export default class VirgilApi {
     static jwtEndpoint = 'https://us-central1-js-chat-ff5ca.cloudfunctions.net/api/generate_jwt';
@@ -8,8 +9,10 @@ export default class VirgilApi {
     keyStorage = new KeyStorage();
     private virgilCrypto = new VirgilCrypto();
     private cardCrypto = new VirgilCardCrypto(this.virgilCrypto);
-    private cardVerifier = new VirgilCardVerifier(this.cardCrypto);
+    private cardVerifier = new VirgilCardVerifier(this.cardCrypto, { verifySelfSignature: false, verifyVirgilSignature: false });
     private cardManager: CardManager;
+    private virgilPythiaCrypto = new VirgilPythiaCrypto();
+    private brainKey: BrainKey;
 
     constructor(identity: string, token: string) {
         this.identity = identity;
@@ -24,20 +27,25 @@ export default class VirgilApi {
                 body: JSON.stringify({ identity }),
             }).then(res => res.json().then(d => d.token));
 
-        const jwtProvider = new CallbackJwtProvider(getJwt);
+        const jwtProvider = new CachingJwtProvider(getJwt);
 
         this.cardManager = new CardManager({
             cardCrypto: this.cardCrypto,
             cardVerifier: this.cardVerifier,
             accessTokenProvider: jwtProvider,
-            retryOnUnauthorized: true,
+            retryOnUnauthorized: true
+        });
+
+        this.brainKey = createBrainKey({
+            virgilCrypto: this.virgilCrypto,
+            virgilPythiaCrypto: this.virgilPythiaCrypto,
+            accessTokenProvider: jwtProvider
         });
     }
 
-    async createCard() {
-        const keyPair = this.virgilCrypto.generateKeys();
-        if (await this.keyStorage.exists(this.identity))
-            throw new Error('You already have private key');
+    async createCard(password: string) {
+        if (await this.keyStorage.exists(this.identity)) return;
+        const keyPair = await this.brainKey.generateKeyPair(password);
 
         this.keyStorage.save(this.identity, this.virgilCrypto.exportPrivateKey(keyPair.privateKey));
 

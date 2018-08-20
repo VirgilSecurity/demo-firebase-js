@@ -1,12 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
 import firebase from 'firebase';
-import { IChannel } from '../services/ChannelListModel';
 import Channels from '../components/Channels';
 import Messages, { IMessage } from '../components/Messages';
 import MessageField from '../components/MessageField';
 import { PrimaryButton, LinkButton } from '../components/Primitives';
 import ChatModel from '../services/ChatModel';
+import { IChannel } from '../services/ChannelModel';
 
 const ChatContainer = styled.div`
     max-width: 1024px;
