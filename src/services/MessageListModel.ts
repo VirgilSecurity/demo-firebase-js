@@ -26,14 +26,14 @@ export default class MessagesListModel {
         });
     }
 
-    listenUpdates(id: string, cb: (error: Error | null, messages: IMessage[]) => void) {
+    listenUpdates(id: string, cb: (messages: IMessage[]) => void) {
         return ChannelListModel.collectionRef
             .doc(id)
             .collection(FirebaseCollections.Messages)
             .orderBy('createdAt', 'asc')
             .onSnapshot(snapshot => {
                 const messages = this.getMessagesFromSnapshot(snapshot);
-                cb(null, messages);
+                cb(messages);
             });
     }
     private getMessagesFromSnapshot(snapshot: firebase.firestore.QuerySnapshot): IMessage[] {

@@ -26,19 +26,19 @@ export default class ChannelListModel {
         return channels;
     }
 
-    listenUpdates(username: string, cb: (error: Error | null, channels: IChannel[]) => void) {
+    listenUpdates(username: string, cb: (channels: IChannel[]) => void) {
         return ChannelListModel.collectionRef
             .where('members', 'array-contains', username)
             .onSnapshot(snapshot => {
                 const channels = snapshot.docs.map(this.getChannelFromSnapshot);
-                snapshot.docChanges().forEach((change) => {
+                cb(channels);
+                return snapshot.docChanges().forEach((change) => {
                     if (change.type === "added") {
                         const channel = this.getChannelFromSnapshot(change.doc);
                         this.channels.push(new ChannelModel(channel, this.username));
                     }
                 });
-                cb(null, channels);
-            });
+            })
     }
 
     async createChannel(receiver: string, username: string) {
@@ -49,7 +49,7 @@ export default class ChannelListModel {
     
         const userDoc = await userRef.get();
         if (!userDoc.exists) throw new Error("User doesn't exist");
-        
+
         const channel = await ChannelListModel.collectionRef.add({
             count: 0,
             members: [username, receiver],

@@ -34,7 +34,7 @@ export interface IChannelsProps {
 export default class Channels extends React.Component<IChannelsProps> {
     renderItem = (item: ChannelModel) => {
         const receiver = item.members.filter(e => e !== this.props.username)[0];
-        console.log('receiver', receiver, item.members, item);
+
         return (
             <SideBarItem onClick={() => this.props.onClick(item)} key={item.id}>
                 <Avatar>{receiver.slice(0, 2).toUpperCase()}</Avatar>

@@ -1,5 +1,5 @@
 import MessagesListModel from './MessageListModel';
-import AppState from './AppState';
+import { IMessage } from '../components/Messages';
 
 export interface IChannel {
     id: string;
@@ -30,9 +30,8 @@ export default class ChannelModel implements IChannel {
         this.messageList.sendMessage(message);
     }
 
-    subscribeOnMessages() {
-        this.loadMessages();
-        return this.messageList.listenUpdates(this.id, (error, updatedMessages) =>{});
+    listenMessages(cb: (messages: IMessage[]) => void) {
+        return this.messageList.listenUpdates(this.id, cb);
     }
 
     loadMessages() {
