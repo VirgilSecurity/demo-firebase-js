@@ -1,10 +1,10 @@
 import React from 'react';
 import firebase from 'firebase';
 import { withRouter, RouteComponentProps, Redirect } from 'react-router';
-import { Routes } from './services/Routes';
-import ChatWindow from './components/ChatWindow';
-import ChatModel from './services/ChatModel';
-import UserApi, { UserInfo } from './services/UserApi';
+import { Routes } from '../services/Routes';
+import ChatWindow from '../components/ChatWindow';
+import ChatModel from '../models/ChatModel';
+import UserApi, { UserInfo } from '../services/UserApi';
 
 export interface IChatPageProps extends RouteComponentProps<{}> {}
 

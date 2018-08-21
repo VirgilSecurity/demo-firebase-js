@@ -65,17 +65,12 @@ export default class VirgilApi {
     }
 
     async encrypt(message: string, publicKeys: VirgilPublicKey[] ) {
-        // if (recipientCards.length > 0) {
-            // const recipientPublicKeys = recipientCards.map(card => card.publicKey);
         const encryptedData = this.virgilCrypto.encrypt(
             message,
             [...publicKeys, ...await this.publicKeys] as VirgilPublicKey[],
         );
 
         return encryptedData.toString('base64');
-        // }
-
-        // throw new Error('Recipient cards not found');
     }
 
     async signThenEncrypt(message: string, recipientIdentity: string) {

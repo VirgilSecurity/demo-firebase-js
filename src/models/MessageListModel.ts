@@ -1,11 +1,11 @@
-import { FirebaseCollections } from './FirebaseCollections';
+import { FirebaseCollections } from '../services/FirebaseCollections';
 import { IMessage } from '../components/Messages';
 import ChannelListModel from './ChannelListModel';
 import firebase from 'firebase';
 import ChannelModel, { IChannel } from './ChannelModel';
-import UserApi from './UserApi';
-import VirgilApi from './VirgilApi';
-import MessageStorage from '../models/MessageStorage';
+import UserApi from '../services/UserApi';
+import VirgilApi from '../services/VirgilApi';
+import MessageStorage from './MessageStorage';
 import { VirgilPublicKey } from 'virgil-crypto';
 
 export default class MessagesListModel {

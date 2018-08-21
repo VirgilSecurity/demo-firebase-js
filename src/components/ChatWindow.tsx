@@ -5,8 +5,8 @@ import Channels from '../components/Channels';
 import Messages, { IMessage } from '../components/Messages';
 import MessageField from '../components/MessageField';
 import { PrimaryButton, LinkButton } from '../components/Primitives';
-import ChatModel from '../services/ChatModel';
-import { IChannel } from '../services/ChannelModel';
+import ChatModel from '../models/ChatModel';
+import { IChannel } from '../models/ChannelModel';
 
 const ChatContainer = styled.div`
     max-width: 1024px;

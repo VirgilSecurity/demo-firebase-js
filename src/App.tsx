@@ -1,7 +1,7 @@
 import React from 'react';
 import { Route, BrowserRouter as Router } from 'react-router-dom';
-import ChatPage from './ChatPage';
-import AuthPage from './AuthPage';
+import ChatPage from './pages/ChatPage';
+import AuthPage from './pages/AuthPage';
 
 import { Routes } from './services/Routes';
 import { injectGlobal } from 'styled-components';

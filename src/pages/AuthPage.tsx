@@ -1,10 +1,10 @@
 import * as React from 'react';
 import styled from 'styled-components';
-import AuthForm, { IAuthFormValues } from './components/AuthForm';
+import AuthForm, { IAuthFormValues } from '../components/AuthForm';
 import { withRouter, RouteComponentProps } from 'react-router';
-import { Routes } from './services/Routes';
+import { Routes } from '../services/Routes';
 import { FormikActions } from 'formik';
-import UserApi from './services/UserApi';
+import UserApi from '../services/UserApi';
 
 const Background = styled.div`
     display: flex;

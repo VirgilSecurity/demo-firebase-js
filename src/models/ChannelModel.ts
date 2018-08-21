@@ -1,4 +1,4 @@
-import MessagesListModel from '../models/MessageListModel';
+import MessagesListModel from './MessageListModel';
 import { IMessage } from '../components/Messages';
 
 export interface IChannel {
