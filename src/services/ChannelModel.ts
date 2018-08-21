@@ -1,5 +1,4 @@
 import MessagesListModel from './MessageListModel';
-import { IMessage } from '../components/Messages';
 
 export interface IChannel {
     id: string;
@@ -8,10 +7,10 @@ export interface IChannel {
 }
 
 export default class ChannelModel implements IChannel {
-    id: string;
-    count: number;
-    members: string[];
-    messageList = new MessagesListModel(this, this.sender);
+    public id: string;
+    public count: number;
+    public members: string[];
+    public messageList: MessagesListModel;
 
     constructor(
         { id, count, members }: IChannel,
@@ -20,6 +19,7 @@ export default class ChannelModel implements IChannel {
         this.id = id;
         this.count = count;
         this.members = members;
+        this.messageList = new MessagesListModel(this, this.sender);
     }
 
     get receiver() {
@@ -30,11 +30,11 @@ export default class ChannelModel implements IChannel {
         this.messageList.sendMessage(message);
     }
 
-    listenMessages(cb: (messages: IMessage[]) => void) {
-        return this.messageList.listenUpdates(this.id, cb);
-    }
+    // listenMessages(cb: (messages: IMessage[]) => void) {
+    //     return this.messageList.listenUpdates(this.id, cb);
+    // }
 
     loadMessages() {
-        return this.messageList.loadMessages(this);
+        return this.messageList.loadMessages();
     }
 }

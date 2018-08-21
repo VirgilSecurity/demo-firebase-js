@@ -2,6 +2,7 @@ import EventEmitter from "wolfy87-eventemitter";
 import { IChatPageState } from "../components/ChatWindow";
 
 export default class AppState extends EventEmitter {
+
     store: IChatPageState = {
         error: null,
         username: null,

@@ -12,6 +12,7 @@ const MessageWrapper = styled.div`
 `;
 
 export interface IMessage {
+    id: string;
     body: string;
     createdAt: Date;
     receiver: string;
@@ -32,6 +33,7 @@ export default class Messages extends React.Component<IMessagesProps> {
     }
 
     render() {
+
         const messages = this.props.messages.map(message => (
             <Message key={message.createdAt.getTime()} message={message} />
         ));
