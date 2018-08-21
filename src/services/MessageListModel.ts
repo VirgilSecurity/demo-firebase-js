@@ -12,20 +12,12 @@ export default class MessagesListModel {
     storage: MessageStorage;
 
     constructor(public channel: ChannelModel, public sender: string) {
-        console.log('channel', channel, channel.id);
-        this.storage = new MessageStorage(channel.id)
+        this.storage = new MessageStorage(channel.id);
         if (!UserApi.userInfo) throw Error('set user first');
         this.VirgilApi = new VirgilApi(sender, UserApi.userInfo.token);
     }
 
-    async loadMessages() {
-        const snapshot = await ChannelListModel.collectionRef
-            .doc(this.channel.id)
-            .collection(FirebaseCollections.Messages)
-            .orderBy('createdAt', 'asc')
-            .get();
-
-        const loadedMessages = snapshot.docs.map(this.getMessageFromSnapshot);
+    async getMessages(loadedMessages: IMessage[]) {
         const { encryptedMessages, deletedMessages } = loadedMessages.reduce(
             (storage, e) => {
                 e.body !== '' ? storage.encryptedMessages.push(e) : storage.deletedMessages.push(e);
@@ -38,7 +30,6 @@ export default class MessagesListModel {
         );
 
         const decryptedMessages = await this.decryptMessages(encryptedMessages);
-        console.log('decryptedMessages', decryptedMessages);
         decryptedMessages.map(this.blindMessage);
 
         const messagesFromStorage = this.storage.addMessages([
@@ -61,25 +52,21 @@ export default class MessagesListModel {
         });
     }
 
-    // listenUpdates(id: string, cb: (messages: IMessage[]) => void) {
-    //     return ChannelListModel.collectionRef
-    //         .doc(id)
-    //         .collection(FirebaseCollections.Messages)
-    //         .orderBy('createdAt', 'asc')
-    //         .onSnapshot(async snapshot => {
-    //             let messages: IMessage[] = [];
-    //             snapshot.docChanges().forEach(messageSnapshot => {
-    //                 if (messageSnapshot.type === 'added') {
-    //                     const encryptedMessage = this.getMessageFromSnapshot(messageSnapshot.doc);
-    //                     messages.push(encryptedMessage);
-    //                     if (encryptedMessage.body !== '') this.deleteBody(messageSnapshot.doc.id, encryptedMessage);
-    //                 }
-    //             });
-    //             const decryptedMessages = await this.decryptMessages(messages);
-    //             this.saveMessages(decryptedMessages);
-    //             cb(decryptedMessages);
-    //         });
-    // }
+    listenUpdates(id: string, cb: (messages: IMessage[]) => void) {
+        return ChannelListModel.collectionRef
+            .doc(id)
+            .collection(FirebaseCollections.Messages)
+            .orderBy('createdAt', 'asc')
+            .onSnapshot(async snapshot => {
+                const loadedMessages = snapshot
+                    .docChanges()
+                    .filter(messageSnapshot => messageSnapshot.type === 'added')
+                    .map(e => this.getMessageFromSnapshot(e.doc))
+                
+                const messages = await this.getMessages(loadedMessages);
+                cb(messages);
+            });
+    }
 
     private getMessageFromSnapshot(snapshot: firebase.firestore.QueryDocumentSnapshot): IMessage {
         return {

@@ -77,8 +77,6 @@ export default class ChatPage extends React.Component<IChatPageProps, IChatPageS
 
     componentDidMount() {
         this.model.state.on('change', this.setState.bind(this));
-        // tslint:disable-next-line:no-any
-        (window as any).$api = ChatModel;
     }
 
     componentWillUnmount() {

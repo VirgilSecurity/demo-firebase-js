@@ -23,9 +23,8 @@ export class ChatModel {
 
     listenMessages = async (channel: IChannel) => {
         const channelModel = this.channelsList.getChannel(channel.id);
-        const messages = await channelModel.loadMessages();
-        console.log('listenMessages', messages);
-        this.state.setState({ currentChannel: channel, messages });
+        this.state.setState({ currentChannel: channel });
+        channelModel.listenMessages(messages => this.state.setState({ messages }));
     };
 
     unsubscribe() {
@@ -36,11 +35,10 @@ export class ChatModel {
 
     private async listenChannels(username: string) {
         if (this.channelsListener) this.channelsListener();
-        this.channelsListener = this.channelsList.listenUpdates(username, (channels) => {
+        this.channelsListener = this.channelsList.listenUpdates(username, channels => {
             this.state.setState({ channels });
         });
     }
-
 }
 
 export default ChatModel;
