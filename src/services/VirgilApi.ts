@@ -1,18 +1,26 @@
-import { VirgilPythiaCrypto, VirgilCrypto, VirgilCardCrypto, VirgilPublicKey } from 'virgil-crypto/dist/virgil-crypto-pythia.es';
-import { VirgilCardVerifier, CachingJwtProvider, CardManager, KeyStorage } from 'virgil-sdk';
-import { createBrainKey, BrainKey } from 'virgil-pythia';
+import {
+    VirgilCrypto,
+    VirgilCardCrypto,
+    VirgilPublicKey,
+    VirgilPrivateKeyExporter,
+    VirgilPrivateKey,
+} from 'virgil-crypto';
+import { VirgilCardVerifier, CachingJwtProvider, CardManager, PrivateKeyStorage } from 'virgil-sdk';
 
 export default class VirgilApi {
     static jwtEndpoint = 'https://us-central1-js-chat-ff5ca.cloudfunctions.net/api/generate_jwt';
 
     identity: string;
-    keyStorage = new KeyStorage();
+    privateKey: Promise<VirgilPrivateKey>;
+    publicKeys: Promise<VirgilPublicKey[]>
     private virgilCrypto = new VirgilCrypto();
+    keyStorage = new PrivateKeyStorage(new VirgilPrivateKeyExporter(this.virgilCrypto));
     private cardCrypto = new VirgilCardCrypto(this.virgilCrypto);
-    private cardVerifier = new VirgilCardVerifier(this.cardCrypto, { verifySelfSignature: false, verifyVirgilSignature: false });
+    private cardVerifier = new VirgilCardVerifier(this.cardCrypto, {
+        verifySelfSignature: false,
+        verifyVirgilSignature: false,
+    });
     private cardManager: CardManager;
-    private virgilPythiaCrypto = new VirgilPythiaCrypto();
-    private brainKey: BrainKey;
 
     constructor(identity: string, token: string) {
         this.identity = identity;
@@ -33,21 +41,20 @@ export default class VirgilApi {
             cardCrypto: this.cardCrypto,
             cardVerifier: this.cardVerifier,
             accessTokenProvider: jwtProvider,
-            retryOnUnauthorized: true
+            retryOnUnauthorized: true,
         });
 
-        this.brainKey = createBrainKey({
-            virgilCrypto: this.virgilCrypto,
-            virgilPythiaCrypto: this.virgilPythiaCrypto,
-            accessTokenProvider: jwtProvider
-        });
+        this.publicKeys = this.getPublicKeys(this.identity);
+        this.privateKey = this.obtainPrivateKey();
     }
 
-    async createCard(password: string) {
-        if (await this.keyStorage.exists(this.identity)) return;
-        const keyPair = await this.brainKey.generateKeyPair(password);
+    async createCard() {
+        const keyPair = await this.virgilCrypto.generateKeys();
 
-        this.keyStorage.save(this.identity, this.virgilCrypto.exportPrivateKey(keyPair.privateKey));
+        this.keyStorage.store(
+            this.identity,
+            keyPair.privateKey,
+        );
 
         const card = await this.cardManager.publishCard({
             privateKey: keyPair.privateKey,
@@ -57,44 +64,28 @@ export default class VirgilApi {
         return { card, keyPair };
     }
 
-    async isCardCreated() {
-        const cards = await this.cardManager.searchCards(this.identity);
-        return Boolean(cards.length);
-    }
+    async encrypt(message: string, publicKeys: VirgilPublicKey[] ) {
+        // if (recipientCards.length > 0) {
+            // const recipientPublicKeys = recipientCards.map(card => card.publicKey);
+        const encryptedData = this.virgilCrypto.encrypt(
+            message,
+            [...publicKeys, ...await this.publicKeys] as VirgilPublicKey[],
+        );
 
-    async encrypt(message: string, senderIdentity: string, recipientIdentity: string) {
-        const [senderCards, recipientCards] = await Promise.all([
-            this.cardManager.searchCards(senderIdentity),
-            this.cardManager.searchCards(recipientIdentity),
-        ]);
+        return encryptedData.toString('base64');
+        // }
 
-        const cards = [...senderCards, ...recipientCards];
-
-        if (recipientCards.length > 0) {
-            const publicKeys = cards.map(card => card.publicKey);
-
-            const encryptedData = this.virgilCrypto.encrypt(
-                message,
-                publicKeys as VirgilPublicKey[],
-            );
-
-            return encryptedData.toString('base64');
-        }
-
-        throw new Error('Recipient cards not found');
+        // throw new Error('Recipient cards not found');
     }
 
     async signThenEncrypt(message: string, recipientIdentity: string) {
         const recipientCards = await this.cardManager.searchCards(recipientIdentity);
-        const senderPrivateKeyBytes = await this.keyStorage.load(this.identity);
-        if (!senderPrivateKeyBytes) throw new Error('sender private key not found');
-        const senderPrivateKey = this.virgilCrypto.importPrivateKey(senderPrivateKeyBytes);
 
         if (recipientCards.length > 0) {
             const recipientPublicKeys = recipientCards.map(card => card.publicKey);
             const encryptedData = this.virgilCrypto.signThenEncrypt(
                 message,
-                senderPrivateKey,
+                await this.privateKey,
                 recipientPublicKeys as VirgilPublicKey[],
             );
 
@@ -105,31 +96,41 @@ export default class VirgilApi {
     }
 
     async decrypt(message: string) {
-        const privateKeyData = await this.keyStorage.load(this.identity);
-        if (!privateKeyData) throw new Error('sender private key not found');
-        const privateKey = this.virgilCrypto.importPrivateKey(privateKeyData);
-
-        const decryptedData = this.virgilCrypto.decrypt(message, privateKey);
+        const decryptedData = this.virgilCrypto.decrypt(message, await this.privateKey);
 
         return decryptedData.toString('utf8');
     }
 
     async decryptThenVerify(message: string, senderIdentity: string) {
         const senderCards = await this.cardManager.searchCards(senderIdentity);
-        const privateKeyData = await this.keyStorage.load(this.identity);
-        if (!privateKeyData) throw new Error('sender private key not found');
-        const privateKey = this.virgilCrypto.importPrivateKey(privateKeyData);
 
         if (senderCards.length > 0) {
             const senderPublicKeys = senderCards.map(card => card.publicKey);
             const decryptedData = this.virgilCrypto.decryptThenVerify(
                 message,
-                privateKey,
+                await this.privateKey,
                 senderPublicKeys as VirgilPublicKey[],
             );
             return decryptedData.toString('utf8');
         }
 
         throw new Error('Sender cards not found');
+    }
+
+    private obtainPrivateKey = async () => {
+        const privateKeyData = await this.keyStorage.load(this.identity);
+        if (!privateKeyData) {
+            // In this demo we will create new card if user signIns from other device, but it is 
+            // not optimal solution. 
+            const { keyPair } = await this.createCard();
+            this.publicKeys.then(keys => keys.push(keyPair.publicKey));
+            return keyPair.privateKey;
+        }
+        return privateKeyData.privateKey as VirgilPrivateKey;
+    }
+
+    getPublicKeys = async (identity: string) => {
+        const cards = await this.cardManager.searchCards(identity);
+        return cards.map(card => card.publicKey as VirgilPublicKey);
     }
 }

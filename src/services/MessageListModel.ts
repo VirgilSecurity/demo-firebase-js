@@ -6,15 +6,19 @@ import ChannelModel, { IChannel } from './ChannelModel';
 import UserApi from './UserApi';
 import VirgilApi from './VirgilApi';
 import MessageStorage from '../models/MessageStorage';
+import { VirgilPublicKey } from 'virgil-crypto';
 
 export default class MessagesListModel {
     VirgilApi: VirgilApi;
     storage: MessageStorage;
+    receiverPublicKeys: Promise<VirgilPublicKey[]>;
+
 
     constructor(public channel: ChannelModel, public sender: string) {
         this.storage = new MessageStorage(channel.id);
         if (!UserApi.userInfo) throw Error('set user first');
         this.VirgilApi = new VirgilApi(sender, UserApi.userInfo.token);
+        this.receiverPublicKeys = this.getReceiverPublicKeys();
     }
 
     async getMessages(loadedMessages: IMessage[]) {
@@ -43,8 +47,7 @@ export default class MessagesListModel {
     async sendMessage(message: string) {
         const encryptedMessage = await this.VirgilApi.encrypt(
             message,
-            this.sender,
-            this.channel.receiver,
+            await this.receiverPublicKeys,
         );
 
         firebase.firestore().runTransaction(transaction => {
@@ -126,4 +129,8 @@ export default class MessagesListModel {
 
         return transaction;
     };
+
+    private getReceiverPublicKeys() {
+        return this.VirgilApi.getPublicKeys(this.channel.receiver);
+    }
 }

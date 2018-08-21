@@ -10,3 +10,4 @@ firebase.initializeApp({
 });
 
 firebase.firestore().settings({ timestampsInSnapshots: true })
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION)

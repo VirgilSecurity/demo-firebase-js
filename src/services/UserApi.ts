@@ -1,6 +1,5 @@
 import firebase from 'firebase';
-import VirgilApi from './VirgilApi';
-import { FirebaseCollections } from './FIrebaseCollections';
+import { FirebaseCollections } from './FirebaseCollections';
 
 export type UserInfo = { user: firebase.User; token: string; username: string } | null;
 export type AuthHandler = (user: UserInfo) => void;
@@ -30,7 +29,7 @@ class UserApi {
     }
 
     async signUp(username: string, password: string) {
-        const userCredentials = await firebase
+        await firebase
             .auth()
             .createUserWithEmailAndPassword(username + this.postfix, password);
 
@@ -38,16 +37,12 @@ class UserApi {
             createdAt: new Date(),
             channels: []
         })
-        const token = await userCredentials.user!.getIdToken();
-        await this.checkOrCreateCard(username, token, password);
     }
 
     async signIn(username: string, password: string) {
-        const userCredentials = await firebase
+        await firebase
             .auth()
             .signInWithEmailAndPassword(username + this.postfix, password);
-        const token = await userCredentials.user!.getIdToken();
-        await this.checkOrCreateCard(username, token, password);
     }
 
     private handleAuthStateChange = async (user: firebase.User) => {
@@ -55,12 +50,6 @@ class UserApi {
         const token = await user.getIdToken();
         return { user: user, token: token, username: username };
     };
-
-    private async checkOrCreateCard(username: string, token: string, password: string) {
-        const sdk = new VirgilApi(username, token);
-        const isCardCreated = await sdk.isCardCreated();
-        if (!isCardCreated) await sdk.createCard(password);
-    }
 }
 
 export default new UserApi();

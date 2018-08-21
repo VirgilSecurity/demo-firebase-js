@@ -18,9 +18,7 @@ export default class MessageStorage {
     }
 
     addMessages(messages: IMessage[]): IMessage[] {
-        console.log('this.messages', this.messages);
         const newMessages = differenceBy(messages, this.messages, e => e.id);
-        console.log('messages', messages, 'newMessages', newMessages);
         this.messages = this.messages
             .concat(newMessages)
             .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
@@ -31,9 +29,7 @@ export default class MessageStorage {
         if (storageString) {
             try {
                 storage = JSON.parse(storageString);
-            } catch (e) {
-                // tslint:disable-next-line:no-empty
-            }
+            } catch (e) {}
         }
 
         storage[this.channelId] = this.messages;
@@ -48,7 +44,8 @@ export default class MessageStorage {
         const savedMessages = window.localStorage.getItem(messageStorageName);
         let parsedStore: { [s: string]: IMessage[] } = {};
         if (savedMessages) parsedStore = JSON.parse(savedMessages);
-        const hasMessages = parsedStore[this.channelId] && Array.isArray(parsedStore[this.channelId]);
+        const hasMessages =
+            parsedStore[this.channelId] && Array.isArray(parsedStore[this.channelId]);
         messages = hasMessages ? parsedStore[this.channelId] : [];
         messages.forEach(m => (m.createdAt = new Date(m.createdAt)));
         this.messages = messages;
