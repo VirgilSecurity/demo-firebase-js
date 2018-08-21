@@ -1,12 +1,10 @@
 import { FirebaseCollections } from './FirebaseCollections';
 import firebase from 'firebase';
-import { IMessage } from '../components/Messages';
 import ChannelModel, { IChannel } from './ChannelModel';
 
 export default class ChannelListModel {
     static collectionRef = firebase.firestore().collection(FirebaseCollections.Channels);
     channels: ChannelModel[] = [];
-    messages: IMessage[] = [];
 
     constructor(public username: string) {}
 
@@ -32,37 +30,50 @@ export default class ChannelListModel {
             .onSnapshot(snapshot => {
                 const channels = snapshot.docs.map(this.getChannelFromSnapshot);
                 cb(channels);
-                return snapshot.docChanges().forEach((change) => {
-                    if (change.type === "added") {
+                return snapshot.docChanges().forEach(change => {
+                    if (change.type === 'added') {
                         const channel = this.getChannelFromSnapshot(change.doc);
                         this.channels.push(new ChannelModel(channel, this.username));
                     }
                 });
-            })
+            });
     }
 
     async createChannel(receiver: string, username: string) {
-        const userRef = firebase
+        const receiverRef = firebase
             .firestore()
             .collection(FirebaseCollections.Users)
             .doc(receiver);
-    
-        const userDoc = await userRef.get();
-        if (!userDoc.exists) throw new Error("User doesn't exist");
+
+        const senderRef = firebase
+            .firestore()
+            .collection(FirebaseCollections.Users)
+            .doc(username);
+
+        // TODO make in transaction and optimise requests
+        const receiverDoc = await receiverRef.get();
+        if (!receiverDoc.exists) throw new Error("User doesn't exist");
 
         const channel = await ChannelListModel.collectionRef.add({
             count: 0,
             members: [username, receiver],
         });
 
-        userRef.update({
-            channels: userDoc.data()!.channels.push(channel.id)
-        })
+        const senderChannels = receiverDoc.data()!.channels;
+        const receiverChannels = receiverDoc.data()!.channels;
+
+        receiverRef.update({
+            channels: senderChannels ? senderChannels.concat(channel.id) : [channel.id],
+        });
+
+        senderRef.update({
+            channels: receiverChannels ? receiverChannels.concat(channel.id) : [channel.id],
+        });
     }
 
     private getChannelFromSnapshot(snapshot: firebase.firestore.QueryDocumentSnapshot): IChannel {
         return {
-            ...snapshot.data() as IChannel,
+            ...(snapshot.data() as IChannel),
             id: snapshot.id,
         } as IChannel;
     }
