@@ -56,4 +56,4 @@ npm run start
 
 ## Additional notes
 
-Due to simplicity of client code demo is not suppose to work when two same users are open in two browsers/tabs. Please use two different users.
+Due to simplicity of client code demo is not suppose to work when two same users are open in two browsers in same time. It support multiple devices but not in the same time.
