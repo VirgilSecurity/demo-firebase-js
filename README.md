@@ -53,3 +53,7 @@ https://YOUR_FUNCTION_URL.cloudfunctions.net/api/generate_jwt
 ```
 npm run start
 ```
+
+## Additional notes
+
+Due to simplicity of client code demo is not suppose to work when two same users are open in two browsers/tabs. Please use two different users.
