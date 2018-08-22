@@ -73,43 +73,11 @@ export default class VirgilApi {
         return encryptedData.toString('base64');
     }
 
-    async signThenEncrypt(message: string, recipientIdentity: string) {
-        const recipientCards = await this.cardManager.searchCards(recipientIdentity);
-
-        if (recipientCards.length > 0) {
-            const recipientPublicKeys = recipientCards.map(card => card.publicKey);
-            const encryptedData = this.virgilCrypto.signThenEncrypt(
-                message,
-                await this.privateKey,
-                recipientPublicKeys as VirgilPublicKey[],
-            );
-
-            return encryptedData.toString('base64');
-        }
-
-        throw new Error('Recipient cards not found');
-    }
 
     async decrypt(message: string) {
         const decryptedData = this.virgilCrypto.decrypt(message, await this.privateKey);
 
         return decryptedData.toString('utf8');
-    }
-
-    async decryptThenVerify(message: string, senderIdentity: string) {
-        const senderCards = await this.cardManager.searchCards(senderIdentity);
-
-        if (senderCards.length > 0) {
-            const senderPublicKeys = senderCards.map(card => card.publicKey);
-            const decryptedData = this.virgilCrypto.decryptThenVerify(
-                message,
-                await this.privateKey,
-                senderPublicKeys as VirgilPublicKey[],
-            );
-            return decryptedData.toString('utf8');
-        }
-
-        throw new Error('Sender cards not found');
     }
 
     private obtainPrivateKey = async () => {
