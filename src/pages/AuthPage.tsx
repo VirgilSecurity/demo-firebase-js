@@ -39,7 +39,7 @@ class AuthPage extends React.Component<RouteComponentProps<IAuthPageProps>, IAut
 
     handleSignUp = async (values: IAuthFormValues, actions: FormikActions<IAuthFormValues>) => {
         try {
-            await UserApi.signUp(values.username, values.password);
+            await UserApi.instance.signUp(values.username, values.password);
             this.props.history.push(Routes.index);
         } catch (e) {
             actions.setErrors({ username: e.message });
@@ -48,11 +48,10 @@ class AuthPage extends React.Component<RouteComponentProps<IAuthPageProps>, IAut
 
     handleSignIn = async (values: IAuthFormValues, actions: FormikActions<IAuthFormValues>) => {
         try {
-            await UserApi.signIn(values.username, values.password);
+            await UserApi.instance.signIn(values.username, values.password);
             this.props.history.push(Routes.index);
         } catch (e) {
             actions.setErrors({ username: e.message });
-            throw e;
         }
     };
     

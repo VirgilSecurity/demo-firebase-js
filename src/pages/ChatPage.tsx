@@ -22,16 +22,16 @@ class ChatPage extends React.Component<IChatPageProps, IChatPageState> {
 
     constructor(props: IChatPageProps) {
         super(props);
-        UserApi.subscribeOnAuthChange(this.createChatModel)
+        UserApi.instance.subscribeOnAuthChange(this.createChatModel)
     }
 
     componentDidMount() {
-        if (UserApi.userInfo) this.createChatModel(UserApi.userInfo);
-        else UserApi.subscribeOnAuthChange(this.createChatModel);
+        if (UserApi.instance.userInfo) this.createChatModel(UserApi.instance.userInfo);
+        else UserApi.instance.subscribeOnAuthChange(this.createChatModel);
     }
     
     componentWillUnmount() {
-        UserApi.subscribeOnAuthChange(null);
+        UserApi.instance.subscribeOnAuthChange(null);
     }
 
     createChatModel = (userInfo: UserInfo) => {

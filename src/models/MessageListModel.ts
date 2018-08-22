@@ -13,24 +13,17 @@ export default class MessagesListModel {
     storage: MessageStorage;
     receiverPublicKeys: Promise<VirgilPublicKey[]>;
 
-
     constructor(public channel: ChannelModel, public sender: string) {
         this.storage = new MessageStorage(channel.id);
-        if (!UserApi.userInfo) throw Error('set user first');
-        this.VirgilApi = new VirgilApi(sender, UserApi.userInfo.token);
+        if (!UserApi.instance.userInfo) throw Error('set user first');
+        this.VirgilApi = new VirgilApi(sender, UserApi.instance.userInfo.token);
         this.receiverPublicKeys = this.getReceiverPublicKeys();
     }
 
     async getMessages(loadedMessages: IMessage[]) {
-        const { encryptedMessages, deletedMessages } = loadedMessages.reduce(
-            (storage, e) => {
-                e.body !== '' ? storage.encryptedMessages.push(e) : storage.deletedMessages.push(e);
-                return storage;
-            },
-            {
-                encryptedMessages: [] as IMessage[],
-                deletedMessages: [] as IMessage[],
-            },
+        // Messages are deleted after receiver read it, so we can't encrypt them;
+        const { encryptedMessages, deletedMessages } = this.getEncryptedAndDeletedMessages(
+            loadedMessages,
         );
 
         const decryptedMessages = await this.decryptMessages(encryptedMessages);
@@ -64,8 +57,8 @@ export default class MessagesListModel {
                 const loadedMessages = snapshot
                     .docChanges()
                     .filter(messageSnapshot => messageSnapshot.type === 'added')
-                    .map(e => this.getMessageFromSnapshot(e.doc))
-                
+                    .map(e => this.getMessageFromSnapshot(e.doc));
+
                 const messages = await this.getMessages(loadedMessages);
                 cb(messages);
             });
@@ -132,5 +125,20 @@ export default class MessagesListModel {
 
     private getReceiverPublicKeys() {
         return this.VirgilApi.getPublicKeys(this.channel.receiver);
+    }
+
+    private getEncryptedAndDeletedMessages(
+        loadedMessages: IMessage[],
+    ): { encryptedMessages: IMessage[]; deletedMessages: IMessage[] } {
+        return loadedMessages.reduce(
+            (storage, e) => {
+                e.body !== '' ? storage.encryptedMessages.push(e) : storage.deletedMessages.push(e);
+                return storage;
+            },
+            {
+                encryptedMessages: [] as IMessage[],
+                deletedMessages: [] as IMessage[],
+            },
+        );
     }
 }

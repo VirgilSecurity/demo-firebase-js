@@ -8,8 +8,14 @@ class UserApi {
     postfix = '@virgilfirebase.com';
     userInfo: UserInfo = null;
     collectionRef = firebase.firestore().collection(FirebaseCollections.Users);
-
+    
     private _onAuthChange: AuthHandler | null = null;
+    private static _instance: UserApi | null = null;
+
+    static get instance(): UserApi {
+        if (UserApi._instance) return UserApi._instance;
+        return UserApi._instance = new UserApi();
+    }
 
     constructor() {
         firebase.auth().onAuthStateChanged(async user => {
@@ -52,4 +58,4 @@ class UserApi {
     };
 }
 
-export default new UserApi();
+export default UserApi;
