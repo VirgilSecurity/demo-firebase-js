@@ -18,7 +18,7 @@ export class ChatModel {
     sendMessage = async (message: string) => {
         if (!this.state.store.currentChannel) throw Error('set channel first');
         const currentChannel = this.channelsList.getChannel(this.state.store.currentChannel.id);
-        
+
         currentChannel.sendMessage(message);
     };
 
@@ -26,7 +26,9 @@ export class ChatModel {
         if (this.messageListener) this.messageListener();
         const channelModel = this.channelsList.getChannel(channel.id);
         this.state.setState({ currentChannel: channel });
-        this.messageListener = channelModel.listenMessages(messages => this.state.setState({ messages }));
+        this.messageListener = channelModel.listenMessages(messages =>
+            this.state.setState({ messages }),
+        );
     };
 
     unsubscribe() {
@@ -37,9 +39,9 @@ export class ChatModel {
 
     private async listenChannels(username: string) {
         if (this.channelsListener) this.channelsListener();
-        this.channelsListener = this.channelsList.listenUpdates(username, channels => {
-            this.state.setState({ channels });
-        });
+        this.channelsListener = this.channelsList.listenUpdates(username, channels =>
+            this.state.setState({ channels }),
+        );
     }
 }
 

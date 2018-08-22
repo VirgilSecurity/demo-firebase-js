@@ -50,7 +50,6 @@ export default class ChannelListModel {
             .collection(FirebaseCollections.Users)
             .doc(username);
 
-        // TODO make in transaction and optimise requests
         const receiverDoc = await receiverRef.get();
         if (!receiverDoc.exists) throw new Error("User doesn't exist");
 
@@ -59,15 +58,19 @@ export default class ChannelListModel {
             members: [username, receiver],
         });
 
-        const senderChannels = receiverDoc.data()!.channels;
-        const receiverChannels = receiverDoc.data()!.channels;
+        firebase.firestore().runTransaction(async transaction => {
+            const senderChannels = receiverDoc.data()!.channels;
+            const receiverChannels = receiverDoc.data()!.channels;
+            
+            transaction.update(receiverRef, {
+                channels: senderChannels ? senderChannels.concat(channel.id) : [channel.id],
+            });
 
-        receiverRef.update({
-            channels: senderChannels ? senderChannels.concat(channel.id) : [channel.id],
-        });
+            transaction.update(senderRef, {
+                channels: receiverChannels ? receiverChannels.concat(channel.id) : [channel.id],
+            });
 
-        senderRef.update({
-            channels: receiverChannels ? receiverChannels.concat(channel.id) : [channel.id],
+            return transaction;
         });
     }
 

@@ -44,7 +44,7 @@ export default class MessagesListModel {
         );
 
         firebase.firestore().runTransaction(transaction => {
-            return this.updateMessage(transaction, this.channel, encryptedMessage, this.sender);
+            return this.updateMessage(transaction, encryptedMessage);
         });
     }
 
@@ -99,11 +99,9 @@ export default class MessagesListModel {
 
     private updateMessage = async (
         transaction: firebase.firestore.Transaction,
-        channel: IChannel,
         message: string,
-        username: string,
     ) => {
-        const channelRef = ChannelListModel.collectionRef.doc(channel.id);
+        const channelRef = ChannelListModel.collectionRef.doc(this.channel.id);
         const snapshot = await transaction.get(channelRef);
         const messagesCount: number = snapshot.data()!.count + 1;
         const messagesCollectionRef = channelRef
@@ -115,8 +113,8 @@ export default class MessagesListModel {
             transaction.set(messagesCollectionRef, {
                 body: message,
                 createdAt: new Date(),
-                sender: username,
-                receiver: channel.members.filter(e => e !== username)[0],
+                sender: this.sender,
+                receiver: this.channel.receiver
             });
         }
 
