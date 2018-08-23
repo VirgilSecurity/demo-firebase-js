@@ -16,15 +16,12 @@ export default class VirgilApi {
     private virgilCrypto = new VirgilCrypto();
     keyStorage = new PrivateKeyStorage(new VirgilPrivateKeyExporter(this.virgilCrypto));
     private cardCrypto = new VirgilCardCrypto(this.virgilCrypto);
-    private cardVerifier = new VirgilCardVerifier(this.cardCrypto, {
-        verifySelfSignature: false,
-        verifyVirgilSignature: false,
-    });
+    private cardVerifier = new VirgilCardVerifier(this.cardCrypto);
     private cardManager: CardManager;
 
     constructor(identity: string, token: string) {
         this.identity = identity;
-
+        
         const getJwt = () =>
             fetch(VirgilApi.jwtEndpoint, {
                 headers: new Headers({
@@ -49,7 +46,7 @@ export default class VirgilApi {
     }
 
     async createCard() {
-        const keyPair = await this.virgilCrypto.generateKeys();
+        const keyPair = this.virgilCrypto.generateKeys();
 
         this.keyStorage.store(
             this.identity,
@@ -61,12 +58,16 @@ export default class VirgilApi {
             publicKey: keyPair.publicKey,
         });
 
+        this.publicKeys = this.publicKeys.then(keys => keys.concat(keyPair.publicKey))
+
         return { card, keyPair };
     }
 
     async encrypt(message: string, publicKeys: VirgilPublicKey[] ) {
         const encryptedData = this.virgilCrypto.encrypt(
             message,
+            // encrypted public keys of sender are added to add possibility to decrypt
+            // message from other device
             [...publicKeys, ...await this.publicKeys] as VirgilPublicKey[],
         );
 
@@ -76,7 +77,6 @@ export default class VirgilApi {
 
     async decrypt(message: string) {
         const decryptedData = this.virgilCrypto.decrypt(message, await this.privateKey);
-
         return decryptedData.toString('utf8');
     }
 
@@ -86,7 +86,7 @@ export default class VirgilApi {
             // In this demo we will create new card if user signIns from other device, but it is 
             // not optimal solution. 
             const { keyPair } = await this.createCard();
-            this.publicKeys.then(keys => keys.push(keyPair.publicKey));
+            this.publicKeys.then(keys => keys.concat(keyPair.publicKey));
             return keyPair.privateKey;
         }
         return privateKeyData.privateKey as VirgilPrivateKey;

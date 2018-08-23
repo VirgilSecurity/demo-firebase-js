@@ -14,16 +14,6 @@ export default class ChannelListModel {
         return channel;
     }
 
-    async loadChannels(user: string): Promise<IChannel[]> {
-        const channels = await ChannelListModel.collectionRef
-            .where('members', 'array-contains', user)
-            .get()
-            .then(s => s.docs.map(this.getChannelFromSnapshot));
-
-        this.channels = channels.map(c => new ChannelModel(c, user));
-        return channels;
-    }
-
     listenUpdates(username: string, cb: (channels: IChannel[]) => void) {
         return ChannelListModel.collectionRef
             .where('members', 'array-contains', username)
@@ -40,6 +30,8 @@ export default class ChannelListModel {
     }
 
     async createChannel(receiver: string, username: string) {
+        if (receiver === username) throw new Error('Autocommunication is not supported yet');
+
         const receiverRef = firebase
             .firestore()
             .collection(FirebaseCollections.Users)
@@ -50,7 +42,7 @@ export default class ChannelListModel {
             .collection(FirebaseCollections.Users)
             .doc(username);
 
-        const receiverDoc = await receiverRef.get();
+        const [receiverDoc, senderDoc] = await Promise.all([receiverRef.get(), senderRef.get()]);
         if (!receiverDoc.exists) throw new Error("User doesn't exist");
 
         const channel = await ChannelListModel.collectionRef.add({
@@ -59,9 +51,9 @@ export default class ChannelListModel {
         });
 
         firebase.firestore().runTransaction(async transaction => {
-            const senderChannels = receiverDoc.data()!.channels;
+            const senderChannels = senderDoc.data()!.channels;
             const receiverChannels = receiverDoc.data()!.channels;
-            
+
             transaction.update(receiverRef, {
                 channels: senderChannels ? senderChannels.concat(channel.id) : [channel.id],
             });

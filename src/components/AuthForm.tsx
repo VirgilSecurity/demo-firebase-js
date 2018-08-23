@@ -47,7 +47,7 @@ export default class AuthForm extends React.Component<IAuthFormProps, IAuthFormS
     renderPasswordInput = ({ field, form }: FieldProps<IAuthFormValues>) => {
         const error =
             form.touched.password && form.errors.password ? (form.errors.password as string) : null;
-        return <InputField label="password" error={error} {...field} />;
+        return <InputField label="password" type="password" error={error} {...field} />;
     };
 
     renderForm = ({ values }: FormikProps<IAuthFormValues>) => {

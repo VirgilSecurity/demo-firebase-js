@@ -27,6 +27,8 @@ export default class MessagesListModel {
         );
 
         const decryptedMessages = await this.decryptMessages(encryptedMessages);
+        // Here we deleting message content after receiver read it.
+        // This is one of the HIPPA requirements.
         decryptedMessages.map(this.blindMessage);
 
         const messagesFromStorage = this.storage.addMessages([

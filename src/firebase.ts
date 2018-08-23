@@ -1,6 +1,7 @@
 import firebase from 'firebase';
 
-var config = {/* PASTE YOUR CONFIG HERE */};
+// PASTE YOUR CONFIG VARIABLE HERE
+var config = {};
 
 firebase.initializeApp(config);
 

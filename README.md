@@ -24,8 +24,8 @@ npm install
 ### Firebase set up
 
 * Go to the [Firebase console](https://console.firebase.google.com) and create your own project.
-* Click "Add Firebase to your web app"
-* Copy config variable only and paste it to `demo-firebase-js/src/firebase.ts`. 
+* Click **"Add Firebase to your web app"**
+* Copy **config variable only** and paste it to `demo-firebase-js/src/firebase.ts`. 
 * Select the **Authentication** panel and then click the **Sign In Method** tab.
   *  Click **Email/Password** and turn on the **Enable** switch, then click **Save**.
 * Select the **Database** panel and then enable **Cloud Firestore**.

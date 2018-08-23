@@ -10,13 +10,13 @@ export interface IChatPageProps extends RouteComponentProps<{}> {}
 
 export interface IChatPageState {
     model: ChatModel | null;
-    isRedirected: boolean;
+    isLoggedIn: boolean;
 }
 
 class ChatPage extends React.Component<IChatPageProps, IChatPageState> {
 
     state = {
-        isRedirected: false,
+        isLoggedIn: true,
         model: null
     }
 
@@ -39,7 +39,7 @@ class ChatPage extends React.Component<IChatPageProps, IChatPageState> {
             const { username, token } = userInfo;
             this.setState({ model: new ChatModel(username, token) })
         } else {
-            this.setState({ isRedirected: true })
+            this.setState({ isLoggedIn: false })
         }
     }
 
@@ -49,7 +49,7 @@ class ChatPage extends React.Component<IChatPageProps, IChatPageState> {
     };
 
     render() {
-        if (this.state.isRedirected) return <Redirect to={Routes.auth} />
+        if (!this.state.isLoggedIn) return <Redirect to={Routes.auth} />
         if (!this.state.model) return null;
         return <ChatWindow signOut={this.signOut} model={this.state.model!} />;
     }

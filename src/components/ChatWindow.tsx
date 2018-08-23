@@ -69,9 +69,6 @@ export interface IChatPageState {
 }
 
 export default class ChatPage extends React.Component<IChatPageProps, IChatPageState> {
-    channelsListener?: firebase.Unsubscribe;
-    messageListener?: firebase.Unsubscribe;
-
     model = this.props.model;
     state = this.model.state.store;
 
@@ -123,10 +120,10 @@ export default class ChatPage extends React.Component<IChatPageProps, IChatPageS
                     </SideBar>
                     <ChatWorkspace>
                         {this.state.currentChannel ? (
-                            <>
+                            <React.Fragment>
                                 <Messages messages={this.state.messages} />
                                 <MessageField handleSend={this.model.sendMessage} />
-                            </>
+                            </React.Fragment>
                         ) : (
                             'Please Select Channel'
                         )}
