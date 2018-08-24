@@ -4,7 +4,8 @@ import { withRouter, RouteComponentProps, Redirect } from 'react-router';
 import { Routes } from '../services/Routes';
 import ChatWindow from '../components/ChatWindow';
 import ChatModel from '../models/ChatModel';
-import UserApi, { UserInfo } from '../services/UserApi';
+import UserApi from '../services/UserApi';
+import { UserParams } from '../services/UserApi';
 
 export interface IChatPageProps extends RouteComponentProps<{}> {}
 
@@ -26,7 +27,7 @@ class ChatPage extends React.Component<IChatPageProps, IChatPageState> {
     }
 
     componentDidMount() {
-        if (UserApi.instance.userInfo) this.createChatModel(UserApi.instance.userInfo);
+        if (UserApi.instance.params) this.createChatModel(UserApi.instance.params);
         else UserApi.instance.subscribeOnAuthChange(this.createChatModel);
     }
     
@@ -34,10 +35,9 @@ class ChatPage extends React.Component<IChatPageProps, IChatPageState> {
         UserApi.instance.subscribeOnAuthChange(null);
     }
 
-    createChatModel = (userInfo: UserInfo) => {
-        if (userInfo) {
-            const { username, token } = userInfo;
-            this.setState({ model: new ChatModel(username, token) })
+    createChatModel = (params: UserParams) => {
+        if (params) {
+            this.setState({ model: new ChatModel(params.username, params.virgilApi ) })
         } else {
             this.setState({ isLoggedIn: false })
         }

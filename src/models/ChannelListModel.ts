@@ -1,12 +1,13 @@
 import { FirebaseCollections } from '../services/FirebaseCollections';
 import firebase from 'firebase';
 import ChannelModel, { IChannel } from './ChannelModel';
+import VirgilApi from '../services/VirgilApi';
 
 export default class ChannelListModel {
     static collectionRef = firebase.firestore().collection(FirebaseCollections.Channels);
     channels: ChannelModel[] = [];
 
-    constructor(public username: string) {}
+    constructor(public username: string, public virgilApi: VirgilApi) {}
 
     getChannel(channelId: string) {
         const channel = this.channels.find(e => e.id === channelId);
@@ -23,7 +24,7 @@ export default class ChannelListModel {
                 return snapshot.docChanges().forEach(change => {
                     if (change.type === 'added') {
                         const channel = this.getChannelFromSnapshot(change.doc);
-                        this.channels.push(new ChannelModel(channel, this.username));
+                        this.channels.push(new ChannelModel(channel, this.username, this.virgilApi));
                     }
                 });
             });

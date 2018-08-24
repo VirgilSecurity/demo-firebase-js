@@ -2,15 +2,16 @@ import AppState from './AppState';
 import firebase from 'firebase';
 import ChannelListModel from './ChannelListModel';
 import { IChannel } from './ChannelModel';
+import VirgilApi from '../services/VirgilApi';
 
 export class ChatModel {
     state = new AppState();
-    channelsList = new ChannelListModel(this.username);
+    channelsList = new ChannelListModel(this.username, this.virgilApi);
 
     channelsListener?: firebase.Unsubscribe;
     messageListener?: firebase.Unsubscribe;
 
-    constructor(public username: string, public token: string) {
+    constructor(public username: string, public virgilApi: VirgilApi) {
         this.listenChannels(username);
         this.state.setState({ username });
     }
@@ -18,8 +19,11 @@ export class ChatModel {
     sendMessage = async (message: string) => {
         if (!this.state.store.currentChannel) throw Error('set channel first');
         const currentChannel = this.channelsList.getChannel(this.state.store.currentChannel.id);
-
-        currentChannel.sendMessage(message);
+        try {
+            await currentChannel.sendMessage(message);
+        } catch(error) {
+            this.state.setState({ error })
+        }
     };
 
     listenMessages = async (channel: IChannel) => {

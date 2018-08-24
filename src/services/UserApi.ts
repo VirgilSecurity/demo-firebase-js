@@ -1,13 +1,14 @@
 import firebase from 'firebase';
 import { FirebaseCollections } from './FirebaseCollections';
+import VirgilApi from './VirgilApi';
 
-export type UserInfo = { user: firebase.User; token: string; username: string } | null;
-export type AuthHandler = (user: UserInfo) => void;
+export type UserParams = { username: string, virgilApi: VirgilApi } | null;
+export type AuthHandler = (params: UserParams) => void;
 
 class UserApi {
     postfix = '@virgilfirebase.com';
-    userInfo: UserInfo = null;
     collectionRef = firebase.firestore().collection(FirebaseCollections.Users);
+    params: UserParams = null;
     
     private _onAuthChange: AuthHandler | null = null;
     private static _instance: UserApi | null = null;
@@ -20,13 +21,14 @@ class UserApi {
     constructor() {
         firebase.auth().onAuthStateChanged(async user => {
             if (user) {
-                const result = await this.handleAuthStateChange(user);
-                if (this._onAuthChange) this._onAuthChange(result);
-                this.userInfo = result;
+                const username = user.email!.replace('@virgilfirebase.com', '');
+                const virgilApi = new VirgilApi(username, () => user.getIdToken())
+                this.params = { username, virgilApi };
+                if (this._onAuthChange) this._onAuthChange(this.params);
                 return;
             }
             if (this._onAuthChange) this._onAuthChange(null);
-            this.userInfo = null;
+            this.params = null;
         });
     }
 
@@ -50,12 +52,6 @@ class UserApi {
             .auth()
             .signInWithEmailAndPassword(username + this.postfix, password);
     }
-
-    private handleAuthStateChange = async (user: firebase.User) => {
-        const username = user.email!.replace('@virgilfirebase.com', '');
-        const token = await user.getIdToken();
-        return { user: user, token: token, username: username };
-    };
 }
 
 export default UserApi;
