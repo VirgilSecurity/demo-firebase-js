@@ -42,6 +42,7 @@ export default class MessageField extends React.Component<IMessageFieldProps, IM
     };
 
     handleEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (this.state.message.trim() === '') return;
         if (e.keyCode === 13 && !e.ctrlKey) {
             e.preventDefault();
             this.props.handleSend(this.state.message)
@@ -60,7 +61,7 @@ export default class MessageField extends React.Component<IMessageFieldProps, IM
                     onChange={this.handleMessageChange}
                     onKeyUp={this.handleEnter}
                 />
-                <SecondaryButton disabled={!this.state.message.length}>send</SecondaryButton>
+                <SecondaryButton disabled={this.state.message.trim() === ''}>send</SecondaryButton>
             </MessageFieldContainer>
         );
     }

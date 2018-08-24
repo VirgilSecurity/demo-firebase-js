@@ -29,7 +29,7 @@ export class ChatModel {
     listenMessages = async (channel: IChannel) => {
         if (this.messageListener) this.messageListener();
         const channelModel = this.channelsList.getChannel(channel.id);
-        this.state.setState({ currentChannel: channel });
+        this.state.setState({ currentChannel: channel, messages: [] });
         this.messageListener = channelModel.listenMessages(messages =>
             this.state.setState({ messages }),
         );
