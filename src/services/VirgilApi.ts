@@ -8,7 +8,7 @@ import {
 import { VirgilCardVerifier, CachingJwtProvider, CardManager, PrivateKeyStorage } from 'virgil-sdk';
 
 export default class VirgilApi {
-    static jwtEndpoint = 'https://us-central1-project-3b4ee.cloudfunctions.net/api/generate_jwt';
+    static jwtEndpoint = 'https://YOUR_ENDPOINT.cloudfunctions.net/api/generate_jwt';
 
     identity: string;
     privateKey: Promise<VirgilPrivateKey>;
