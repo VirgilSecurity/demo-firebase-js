@@ -33,6 +33,7 @@ export const SecondaryButton = Button.extend`
     display: inline-block;
     padding: 16px 19px;
     color: #9e3621;
+    margin: 2px;
     font-family: Muller;
     text-transform: uppercase;
     text-decoration: none;
