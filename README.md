@@ -57,3 +57,8 @@ npm run start
 ## Additional notes
 
 Due to simplicity of client code demo is not suppose to work when two same users are open in two browsers in same time. It support multiple devices but not in the same time.
+
+
+## TROUBLESHOOTING
+
+If you decide to repeat instructions and create new application on dashboard.virgilsecurity.com, make sure you deleted all data from browser storage, especially indexedDB and localstorage. If you create new application, cards created with previous appId stay associated with this appId. So you need to generate new private keys and create new cards for new virgil application.
