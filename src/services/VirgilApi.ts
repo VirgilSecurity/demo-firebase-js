@@ -74,11 +74,14 @@ export default class VirgilApi {
     };
 
     private async obtainPrivateKey() {
-        const [privateKeyData, publicKeys] = await Promise.all([
+        let [privateKeyData, publicKeys] = await Promise.all([
             this.keyStorage.load(this.identity),
             this.publicKeys,
         ]);
-        if (publicKeys.length === 0) await this.keyStorage.delete(this.identity);
+        if (publicKeys.length === 0) {
+            await this.keyStorage.delete(this.identity);
+            privateKeyData = null;
+        }
         if (!privateKeyData) {
             const { keyPair } = await this.createCard();
             this.publicKeys.then(keys => keys.concat(keyPair.publicKey));
