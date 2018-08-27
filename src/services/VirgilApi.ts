@@ -74,31 +74,38 @@ export default class VirgilApi {
     };
 
     private async obtainPrivateKey() {
-        const privateKeyData = await this.keyStorage.load(this.identity);
+        const [privateKeyData, publicKeys] = await Promise.all([
+            this.keyStorage.load(this.identity),
+            this.publicKeys,
+        ]);
+        if (publicKeys.length === 0) await this.keyStorage.delete(this.identity);
         if (!privateKeyData) {
-            // In this demo we will create new card if user signIns from other device, but it is
-            // not optimal solution.
             const { keyPair } = await this.createCard();
             this.publicKeys.then(keys => keys.concat(keyPair.publicKey));
             return keyPair.privateKey;
         }
         return privateKeyData.privateKey as VirgilPrivateKey;
-    };
+    }
 
     private getJwt = (identity: string) => async () => {
         const token = await this.getToken();
-        const response = await fetch(VirgilApi.jwtEndpoint, {
+        let response;
+        try {
+            response = await fetch(VirgilApi.jwtEndpoint, {
                 headers: new Headers({
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            }),
-            method: 'POST',
-            body: JSON.stringify({ identity }),
-        })
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                }),
+                method: 'POST',
+                body: JSON.stringify({ identity }),
+            });
+        } catch (e) {
+            throw new Error(e);
+        }
         if (response.ok) {
             const data: { token: string } = await response.json();
             return data.token;
         }
         throw new Error('Error in getJWT with code: ' + response.status);
-    }
+    };
 }

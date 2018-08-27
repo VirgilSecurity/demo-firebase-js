@@ -37,7 +37,7 @@ export default class MessagesListModel {
 
     async sendMessage(message: string) {
         const receiverPublicKeys = await this.receiverPublicKeys;
-        if (!receiverPublicKeys.length) throw new Error('receiver public keys not found');
+        if (!receiverPublicKeys.length) throw new Error('Receiver public keys not found. Please login again with your receiver.');
         const encryptedMessage = await this.virgilApi.encrypt(
             message,
             receiverPublicKeys,
