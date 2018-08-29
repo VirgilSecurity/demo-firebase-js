@@ -103,13 +103,13 @@ export default class MessagesListModel {
     ) => {
         const channelRef = ChannelListModel.collectionRef.doc(this.channel.id);
         const snapshot = await transaction.get(channelRef);
-        const messagesCount: number = snapshot.data()!.count + 1;
+        let messagesCount: number = snapshot.data()!.count;
         const messagesCollectionRef = channelRef
             .collection(FirebaseCollections.Messages)
             .doc(messagesCount.toString());
 
         if (snapshot.exists) {
-            transaction.update(channelRef, { count: messagesCount });
+            transaction.update(channelRef, { count: ++messagesCount });
             transaction.set(messagesCollectionRef, {
                 body: message,
                 createdAt: new Date(),
