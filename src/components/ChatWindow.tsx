@@ -60,7 +60,7 @@ export interface IChatPageProps {
 }
 
 export interface IChatPageState {
-    error: null | Error;
+    error: null | Error | string;
     username: string | null;
     hasPrivateKey: boolean;
     channels: IChannel[];

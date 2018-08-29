@@ -19,9 +19,20 @@ export class ChatModel {
                 this.state.setState({ hasPrivateKey: true });
             })
             .catch(error => {
-                if (!error) error = 'Unknown error.';
-                if (error) error = error.message + '\nPlease try to reload page. If problem not solved, please contact support'; 
-                this.state.setState({ error });
+                const errorMessage = `Failed to load user private key:
+${error ? error.message : 'Unknown error'}
+Please try to reload page. If problem not solved, please contact support
+`
+                this.state.setState({ error: errorMessage });
+            });
+
+        this.virgilApi.publicKeys
+            .catch(error => {
+                const errorMessage = `Failed to load user public keys:
+${error ? error.message : 'Unknown error'}
+Please try to reload page. If problem not solved, please contact support
+`
+                this.state.setState({ error: errorMessage });
             });
     }
 
