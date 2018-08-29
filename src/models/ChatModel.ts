@@ -18,7 +18,11 @@ export class ChatModel {
             .then(_privateKey => {
                 this.state.setState({ hasPrivateKey: true });
             })
-            .catch(error => this.state.setState({ error }));
+            .catch(error => {
+                if (!error) error = 'Unknown error.';
+                if (error) error = error.message + '\nPlease try to reload page. If problem not solved, please contact support'; 
+                this.state.setState({ error });
+            });
     }
 
     sendMessage = async (message: string) => {
