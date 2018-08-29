@@ -14,6 +14,11 @@ export class ChatModel {
     constructor(public username: string, public virgilApi: VirgilApi) {
         this.listenChannels(username);
         this.state.setState({ username });
+        this.virgilApi.privateKey
+            .then(_privateKey => {
+                this.state.setState({ hasPrivateKey: true });
+            })
+            .catch(error => this.state.setState({ error }));
     }
 
     sendMessage = async (message: string) => {
@@ -21,8 +26,8 @@ export class ChatModel {
         const currentChannel = this.channelsList.getChannel(this.state.store.currentChannel.id);
         try {
             await currentChannel.sendMessage(message);
-        } catch(error) {
-            this.state.setState({ error })
+        } catch (error) {
+            this.state.setState({ error });
         }
     };
 

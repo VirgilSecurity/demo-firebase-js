@@ -1,6 +1,5 @@
 import React from 'react';
 import styled from 'styled-components';
-import firebase from 'firebase';
 import Channels from '../components/Channels';
 import Messages, { IMessage } from '../components/Messages';
 import MessageField from '../components/MessageField';
@@ -53,7 +52,7 @@ const BottomPrimaryButton = PrimaryButton.extend`
 
 const RightSide = styled.span`
     color: white;
-`
+`;
 
 export interface IChatPageProps {
     model: ChatModel;
@@ -63,6 +62,7 @@ export interface IChatPageProps {
 export interface IChatPageState {
     error: null | Error;
     username: string | null;
+    hasPrivateKey: boolean;
     channels: IChannel[];
     messages: IMessage[];
     currentChannel: IChannel | null;
@@ -112,14 +112,16 @@ export default class ChatPage extends React.Component<IChatPageProps, IChatPageS
                         <Channels
                             onClick={this.selectChannel}
                             username={this.state.username!}
-                            channels={this.state.channels}
+                            channels={this.state.hasPrivateKey ? this.state.channels : []}
                         />
                         <BottomPrimaryButton onClick={this.createChannel}>
                             New Channel
                         </BottomPrimaryButton>
                     </SideBar>
                     <ChatWorkspace>
-                        {this.state.currentChannel ? (
+                        {!this.state.hasPrivateKey ? (
+                            'Loading Virgil Credentials'
+                        ) : this.state.currentChannel ? (
                             <React.Fragment>
                                 <Messages messages={this.state.messages} />
                                 <MessageField handleSend={this.model.sendMessage} />

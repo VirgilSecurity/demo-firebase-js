@@ -6,6 +6,7 @@ export default class AppState extends EventEmitter {
     store: IChatPageState = {
         error: null,
         username: null,
+        hasPrivateKey: false,
         currentChannel: null,
         channels: [],
         messages: [],
