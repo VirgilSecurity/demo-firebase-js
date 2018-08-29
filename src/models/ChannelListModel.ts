@@ -31,6 +31,8 @@ export default class ChannelListModel {
     }
 
     async createChannel(receiver: string, username: string) {
+        // We are using email auth provider, so all nicknames are lowercased by firebase
+        receiver = receiver.toLowerCase();
         if (receiver === username) throw new Error('Autocommunication is not supported yet');
         const hasChat = this.channels.some(e => e.receiver === receiver);
         if (hasChat) throw new Error('You already has this channel');
