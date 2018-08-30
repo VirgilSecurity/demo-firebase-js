@@ -42,6 +42,9 @@ npm install
   * Click **PUBLISH**.
 
 #### Cloud functions
+
+> If you have already used our demos and have project with functions, make sure you get latest version from the git
+
 * In order for the mobile app to work, you need to deploy a Firebase cloud function that generates JWT tokens for Virgil's APIs. [Follow setup instructions here](https://github.com/VirgilSecurity/demo-firebase-func)
 * Once the function is successfully created, go to the Firebase console -> Functions tab and copy your function url from the Event column
 * Open `demo-firebase-js/src/services/VirgilApi.ts` and change property jwtEndpoint to:
