@@ -1,33 +1,30 @@
 # demo-firebase-js
-A simple javascript application that demonstrates how end-to-end encryption works with firebase as a backend service for authentication and chat messaging. While this is a chat app, you can reuse it in any other apps to protect user data, documents, images.
+End-to-end encrypted, HIPAA-compliant JavaScript chat sample app for Firebase. While this is a chat app, you can reuse it in any other apps to protect user data, documents, images using Virgil's end-to-end encryption. Only HIPAA-compliant for chat use-cases.
 
-## Getting Started
+## Clone project
 
-Start with cloning repository to your computer. Open *terminal*, navigate to the folder where you want to store the application and execute
+Start with cloning the repository to your computer. Open *terminal*, navigate to the folder where you want to store the application and execute
 ```bash
-$ git clone https://github.com/VirgilSecurity/demo-firebase-js
-
-$ cd demo-firebase-js
+git clone https://github.com/VirgilSecurity/demo-firebase-js
+cd demo-firebase-js
 ```
 
 ## Prerequisites
 
-* node v8.11.3 or later
-* npm or yarn
+* [node v8.11.3](https://nodejs.org/en/download) or later
+* [npm](https://www.npmjs.com/get-npm) or yarn
 
-### Updating dependencies
+### Update dependencies
 
 ```
 npm install
 ```
 
-### Firebase set up
+### Create Firebase project
+Go to the [Firebase console](https://console.firebase.google.com) and if you haven't created a project yet, create one now. If you already have one that you want to use, open it and skip to the **Firebase app setup**
 
-* Go to the [Firebase console](https://console.firebase.google.com) and create your own project.
-* Click **"Add Firebase to your web app"**
-* Copy **config variable only** and paste it to `demo-firebase-js/src/firebase.ts`. 
 * Select the **Authentication** panel and then click the **Sign In Method** tab.
-  *  Click **Email/Password** and turn on the **Enable** switch, then click **Save**.
+*  Click **Email/Password** and turn on the **Enable** switch, then click **Save**.
 * Select the **Database** panel and then enable **Cloud Firestore**.
   * Click **Rules** and paste:
   ```
@@ -39,15 +36,33 @@ npm install
     }
   }
   ```
-  * Click **PUBLISH**.
+* Click **PUBLISH**.
 
-#### Cloud functions
+### Firebase JS app setup
 
-> If you have already used our demos and have project with functions, make sure you get latest version from the git
+* In your Firebase project (on the Firebase console), click the **gear icon** -> **Project settings**
+* Click **Add app** and choose **"Add Firebase to your web app"**
+* A config code block pops up with HTML + JS code. Copy **only this part** to the clipboard:
+```
+  var config = {
+    apiKey: "...",
+    authDomain: "...",
+    databaseURL: "...",
+    projectId: "...",
+    storageBucket: "...",
+    messagingSenderId: "..."
+  };
+```
 
-* In order for the mobile app to work, you need to deploy a Firebase cloud function that generates JWT tokens for Virgil's APIs. [Follow setup instructions here](https://github.com/VirgilSecurity/demo-firebase-func)
-* Once the function is successfully created, go to the Firebase console -> Functions tab and copy your function url from the Event column
-* Open `demo-firebase-js/src/services/VirgilApi.ts` and change property jwtEndpoint to:
+* Paste it into the project's `src/firebase.ts` file.
+
+#### Firebase cloud functions setup
+
+> In order for the app to work, you need to deploy a Firebase function that creates JWT tokens for your authenticated users. If you already deployed this function for either the iOS or Android apps, you don't need to do it again.
+
+* Otherwise, [follow the instructions here](https://github.com/VirgilSecurity/demo-firebase-func)
+* Once the function is successfully created, go to the Firebase console -> Functions tab and copy your function's url
+* Open `src/services/VirgilApi.ts` and change the property jwtEndpoint to:
 ```
 https://YOUR_FUNCTION_URL.cloudfunctions.net/api/generate_jwt
 ```
@@ -57,10 +72,8 @@ https://YOUR_FUNCTION_URL.cloudfunctions.net/api/generate_jwt
 npm run start
 ```
 
-## Additional notes
+* Browse to http://localhost:1234 to test the app.
 
-Due to simplicity of client code demo is not suppose to work when two same users are open in two browsers in same time. It support multiple devices but not in the same time.
+> When running 2 instances of the app, start one in **Incognito** to avoid mixing up the keys in local storage.
 
-## TROUBLESHOOTING
-
-* If you decide to repeat instructions and create new application on dashboard.virgilsecurity.com, make sure you deleted all data from browser storage, especially indexedDB and localstorage. If you create new application, cards created with previous appId stay associated with this appId. So you need to generate new private keys and create new cards for new virgil application.
+> If you get errors of keys not found, try flushing your browser cache first.
