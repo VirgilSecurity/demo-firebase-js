@@ -37,6 +37,7 @@ class UserApi {
     }
 
     async signUp(username: string, password: string) {
+        username = username.toLocaleLowerCase();
         await firebase
             .auth()
             .createUserWithEmailAndPassword(username + this.postfix, password);
