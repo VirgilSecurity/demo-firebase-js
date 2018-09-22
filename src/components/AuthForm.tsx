@@ -50,8 +50,8 @@ export default class AuthForm extends React.Component<IAuthFormProps, IAuthFormS
         return <InputField label="password" type="password" error={error} {...field} />;
     };
 
-    renderForm = ({ values }: FormikProps<IAuthFormValues>) => {
-        const isDisabled = values.username === '' || values.password === '';
+    renderForm = ({ values, isValid }: FormikProps<IAuthFormValues>) => {
+        const isDisabled = values.username === '' || values.password === '' || !isValid;
         return (
             <Form>
                 <Field name="username" render={this.renderEmailInput} />
