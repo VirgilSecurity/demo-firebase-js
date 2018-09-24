@@ -15,21 +15,18 @@ cd demo-firebase-js
 ```
 
 ## Let's set up your Firebase account for the app
-
 In order for the app to work, you need to deploy a Firebase function that gives out JWT tokens for your authenticated users. You'll also need to create a Firestore database with a specific rule set.
 
 * **[Follow instructions here](https://github.com/VirgilSecurity/demo-firebase-func)**
 
-* **Copy your new Firebase function's URL**: go to the Firebase console -> Functions tab and copy your new function's url
+## Add your Firebase function URL and Firebase project config to app
 
+* **Copy your new Firebase function's URL**: go to the Firebase console -> your project -> Functions tab and copy your new function's url
 * **Paste it** into `src/services/VirgilApi.ts`:
   ```
   https://YOUR_FUNCTION_URL.cloudfunctions.net/api/generate_jwt
   ```
-
-## Get your Firebase project's JavaScript config file
-
-* Go back to your Firebase console, open your project, click the **gear icon** -> **Project settings**
+* Go back to your project's page in Firebase console, click the **gear icon** -> **Project settings**
 * Click **Add app** and choose **"</> Add Firebase to your web app"**
 * Copy **only this part** to the clipboard:
   ```
