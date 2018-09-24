@@ -18,14 +18,14 @@ cd demo-firebase-js
 
 In order for the app to work, you need to deploy a Firebase function that gives out JWT tokens for your authenticated users. You'll also need to create a Firestore database with a specific rule set.
 
-**[Follow instructions here](https://github.com/VirgilSecurity/demo-firebase-func)**
+* **[Follow instructions here](https://github.com/VirgilSecurity/demo-firebase-func)**
 
-**Copy your new Firebase function's URL**: go to the Firebase console -> Functions tab and copy your new function's url
+* **Copy your new Firebase function's URL**: go to the Firebase console -> Functions tab and copy your new function's url
 
-**Paste it** into `src/services/VirgilApi.ts`:
-```
-https://YOUR_FUNCTION_URL.cloudfunctions.net/api/generate_jwt
-```
+* **Paste it** into `src/services/VirgilApi.ts`:
+  ```
+  https://YOUR_FUNCTION_URL.cloudfunctions.net/api/generate_jwt
+  ```
 
 ## Get your Firebase project's JavaScript config file
 
@@ -42,7 +42,7 @@ https://YOUR_FUNCTION_URL.cloudfunctions.net/api/generate_jwt
       messagingSenderId: "..."
     };
   ```
-* Replace the copied block in your `src/firebase.ts` file.
+* **Replace the copied block** in your `src/firebase.ts` file.
 
 ### Update dependencies, build & run
 
@@ -51,6 +51,7 @@ npm install
 npm run start
 ```
 
-* Browse to http://localhost:1234 to test the app.
+* **Browse to http://localhost:1234** to test the app.
 
-> Start an **incognito window** to have 2 chat apps running with 2 different users
+> Start a **second incognito window** to have 2 chat apps running with 2 different users
+> Remember, the app deletes messages right after delivery (it's a HIPAA requirement to meet the conduit exception). If you want to see encrypted messages in your Firestore database, run only 1 browser instance, send a message to your chat partner and check Firestore DB's contents before opening the other user's app to receive the message. If you don't want to implement this behavior in your own app, you can remove it from this sample.
