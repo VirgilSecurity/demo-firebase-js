@@ -14,13 +14,11 @@ git clone https://github.com/VirgilSecurity/demo-firebase-js
 cd demo-firebase-js
 ```
 
-## Let's set up your Firebase account & database
+## Let's set up your Firebase account for the app
 
-In order for the app to work, you need to deploy a Firebase function that gives out JWT tokens for your authenticated users. 
+In order for the app to work, you need to deploy a Firebase function that gives out JWT tokens for your authenticated users. You'll also need to create a Firestore database with a specific rule set.
 
-> If you already did this, skip to thenext step.
-
-**[follow the instructions here](https://github.com/VirgilSecurity/demo-firebase-func)**
+**[Follow the instructions here](https://github.com/VirgilSecurity/demo-firebase-func)**
 
 **Copy your new Firebase function's URL**: go to the Firebase console -> Functions tab and copy your new function's url
 
