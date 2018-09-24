@@ -18,7 +18,7 @@ cd demo-firebase-js
 
 In order for the app to work, you need to deploy a Firebase function that gives out JWT tokens for your authenticated users. You'll also need to create a Firestore database with a specific rule set.
 
-**[Follow the instructions here](https://github.com/VirgilSecurity/demo-firebase-func)**
+**[Follow instructions here](https://github.com/VirgilSecurity/demo-firebase-func)**
 
 **Copy your new Firebase function's URL**: go to the Firebase console -> Functions tab and copy your new function's url
 
