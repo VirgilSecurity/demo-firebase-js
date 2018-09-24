@@ -16,11 +16,13 @@ cd demo-firebase-js
 
 ## Let's set up your Firebase account & database
 
-> In order for the app to work, you need to deploy a Firebase function that gives out JWT tokens for your authenticated users. If you already deployed this function for either the iOS or Android apps, you only need to copy the **Firebase Function URL** for the next step.
+In order for the app to work, you need to deploy a Firebase function that gives out JWT tokens for your authenticated users. 
+
+> If you already did this, skip to thenext step.
 
 **[follow the instructions here](https://github.com/VirgilSecurity/demo-firebase-func)**
 
-**Copy new function's URL**: go to the Firebase console -> Functions tab and copy your new function's url
+**Copy your new Firebase function's URL**: go to the Firebase console -> Functions tab and copy your new function's url
 
 **Paste it** into `src/services/VirgilApi.ts`:
 ```
@@ -32,17 +34,17 @@ https://YOUR_FUNCTION_URL.cloudfunctions.net/api/generate_jwt
 * Go back to your Firebase console, open your project, click the **gear icon** -> **Project settings**
 * Click **Add app** and choose **"</> Add Firebase to your web app"**
 * Copy **only this part** to the clipboard:
-```
-  var config = {
-    apiKey: "...",
-    authDomain: "...",
-    databaseURL: "...",
-    projectId: "...",
-    storageBucket: "...",
-    messagingSenderId: "..."
-  };
-```
-* Replace the block in your `src/firebase.ts` file.
+  ```
+    var config = {
+      apiKey: "...",
+      authDomain: "...",
+      databaseURL: "...",
+      projectId: "...",
+      storageBucket: "...",
+      messagingSenderId: "..."
+    };
+  ```
+* Replace the copied block in your `src/firebase.ts` file.
 
 ### Update dependencies, build & run
 
