@@ -46,8 +46,9 @@ class UserApi {
             throw e;
         }
 
-        this.createVirgilClient(user.user!).signUp();
-
+        const client = this.createVirgilClient(user.user!);
+        await client.privateKeyLoader.createSyncStorage('qwerty123');
+        await client.signUp();
         this.collectionRef.doc(username).set({
             createdAt: new Date(),
             channels: [],
