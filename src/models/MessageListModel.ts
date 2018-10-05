@@ -3,17 +3,21 @@ import { IMessage } from '../components/Messages';
 import ChannelListModel from './ChannelListModel';
 import firebase from 'firebase';
 import ChannelModel from './ChannelModel';
-import VirgilApi from '../services/VirgilApi';
+import Facade, { Receiver } from '../services/VirgilApi';
 import MessageStorage from './MessageStorage';
-import { VirgilPublicKey } from 'virgil-crypto';
 
 export default class MessagesListModel {
     storage: MessageStorage;
-    receiverPublicKeys: Promise<VirgilPublicKey[]>;
+    receiver: Receiver;
 
-    constructor(public channel: ChannelModel, public sender: string, public virgilApi: VirgilApi) {
+    constructor(
+        public channel: ChannelModel,
+        public sender: string,
+        public client: Facade
+    ) {
         this.storage = new MessageStorage(channel.id);
-        this.receiverPublicKeys = this.getReceiverPublicKeys();
+        this.receiver = this.client.getReceiver(this.channel.receiver);
+        this.receiver.preloadKeys();
     }
 
     async getMessages(loadedMessages: IMessage[]) {
@@ -36,12 +40,7 @@ export default class MessagesListModel {
     }
 
     async sendMessage(message: string) {
-        const receiverPublicKeys = await this.receiverPublicKeys;
-        if (!receiverPublicKeys.length) throw new Error('Receiver public keys not found. Please login again with your receiver.');
-        const encryptedMessage = await this.virgilApi.encrypt(
-            message,
-            receiverPublicKeys,
-        );
+        const encryptedMessage = await this.client.encrypt(message, this.receiver.username);
 
         firebase.firestore().runTransaction(transaction => {
             return this.updateMessage(transaction, encryptedMessage);
@@ -74,7 +73,7 @@ export default class MessagesListModel {
 
     private decryptMessages = async (encryptedMessages: IMessage[]) => {
         const decryptedBodies = await Promise.all(
-            encryptedMessages.map(m => this.virgilApi.decrypt(m.body)),
+            encryptedMessages.map(m => this.client.decrypt(m.body)),
         );
         const decryptedMessages = encryptedMessages.map((m, i) => {
             m.body = decryptedBodies[i];
@@ -114,16 +113,12 @@ export default class MessagesListModel {
                 body: message,
                 createdAt: new Date(),
                 sender: this.sender,
-                receiver: this.channel.receiver
+                receiver: this.channel.receiver,
             });
         }
 
         return transaction;
     };
-
-    private getReceiverPublicKeys() {
-        return this.virgilApi.getPublicKeys(this.channel.receiver);
-    }
 
     private getEncryptedAndDeletedMessages(
         loadedMessages: IMessage[],

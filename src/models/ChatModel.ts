@@ -2,36 +2,25 @@ import AppState from './AppState';
 import firebase from 'firebase';
 import ChannelListModel from './ChannelListModel';
 import { IChannel } from './ChannelModel';
-import VirgilApi from '../services/VirgilApi';
+import Facade from '../services/VirgilApi';
 
 export class ChatModel {
     state = new AppState();
-    channelsList = new ChannelListModel(this.username, this.virgilApi);
+    channelsList = new ChannelListModel(this.facade);
 
     channelsListener?: firebase.Unsubscribe;
     messageListener?: firebase.Unsubscribe;
 
-    constructor(public username: string, public virgilApi: VirgilApi) {
-        this.listenChannels(username);
-        this.state.setState({ username });
-        this.virgilApi.privateKey
-            .then(_privateKey => {
-                this.state.setState({ hasPrivateKey: true });
-            })
+    constructor(public facade: Facade) {
+        this.listenChannels(this.facade.identity);
+        this.state.setState({ username: this.facade.identity });
+        this.facade.encryptionClient
+            .then(() => this.state.setState({ hasPrivateKey: true }))
             .catch(error => {
                 const errorMessage = `Failed to load user private key:
 ${error ? error.message : 'Unknown error'}
 Please try to reload page. If problem not solved, please contact support
-`
-                this.state.setState({ error: errorMessage });
-            });
-
-        this.virgilApi.publicKeys
-            .catch(error => {
-                const errorMessage = `Failed to load user public keys:
-${error ? error.message : 'Unknown error'}
-Please try to reload page. If problem not solved, please contact support
-`
+`;
                 this.state.setState({ error: errorMessage });
             });
     }

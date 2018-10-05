@@ -5,7 +5,7 @@ import { Routes } from '../services/Routes';
 import ChatWindow from '../components/ChatWindow';
 import ChatModel from '../models/ChatModel';
 import UserApi from '../services/UserApi';
-import { UserParams } from '../services/UserApi';
+import Facade from '../services/VirgilApi';
 
 export interface IChatPageProps extends RouteComponentProps<{}> {}
 
@@ -27,7 +27,7 @@ class ChatPage extends React.Component<IChatPageProps, IChatPageState> {
     }
 
     componentDidMount() {
-        if (UserApi.instance.params) this.createChatModel(UserApi.instance.params);
+        if (UserApi.instance.client) this.createChatModel(UserApi.instance.client);
         else UserApi.instance.subscribeOnAuthChange(this.createChatModel);
     }
     
@@ -35,9 +35,9 @@ class ChatPage extends React.Component<IChatPageProps, IChatPageState> {
         UserApi.instance.subscribeOnAuthChange(null);
     }
 
-    createChatModel = (params: UserParams) => {
-        if (params) {
-            this.setState({ model: new ChatModel(params.username, params.virgilApi ) })
+    createChatModel = (facade: Facade | null) => {
+        if (facade) {
+            this.setState({ model: new ChatModel(facade) })
         } else {
             this.setState({ isLoggedIn: false })
         }

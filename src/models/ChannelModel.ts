@@ -1,6 +1,6 @@
 import MessagesListModel from './MessageListModel';
 import { IMessage } from '../components/Messages';
-import VirgilApi from '../services/VirgilApi';
+import Facade from '../services/VirgilApi';
 
 export interface IChannel {
     id: string;
@@ -17,12 +17,12 @@ export default class ChannelModel implements IChannel {
     constructor(
         { id, count, members }: IChannel,
         public sender: string,
-        public virgilApi: VirgilApi
+        public facade: Facade,
     ) {
         this.id = id;
         this.count = count;
         this.members = members;
-        this.messageList = new MessagesListModel(this, this.sender, this.virgilApi);
+        this.messageList = new MessagesListModel(this, this.sender, this.facade);
     }
 
     get receiver() {

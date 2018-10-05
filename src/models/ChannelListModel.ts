@@ -1,13 +1,16 @@
 import { FirebaseCollections } from '../services/FirebaseCollections';
 import firebase from 'firebase';
 import ChannelModel, { IChannel } from './ChannelModel';
-import VirgilApi from '../services/VirgilApi';
+import Facade from '../services/VirgilApi';
 
 export default class ChannelListModel {
     static collectionRef = firebase.firestore().collection(FirebaseCollections.Channels);
     channels: ChannelModel[] = [];
+    username: string;
 
-    constructor(public username: string, public virgilApi: VirgilApi) {}
+    constructor(public facade: Facade) {
+        this.username = facade.identity;
+    }
 
     getChannel(channelId: string) {
         const channel = this.channels.find(e => e.id === channelId);
@@ -24,16 +27,16 @@ export default class ChannelListModel {
                 return snapshot.docChanges().forEach(change => {
                     if (change.type === 'added') {
                         const channel = this.getChannelFromSnapshot(change.doc);
-                        this.channels.push(new ChannelModel(channel, this.username, this.virgilApi));
+                        this.channels.push(new ChannelModel(channel, this.username, this.facade));
                     }
                 });
             });
     }
 
-    async createChannel(receiver: string, username: string) {
+    async createChannel(receiver: string) {
         // We are using email auth provider, so all nicknames are lowercased by firebase
         receiver = receiver.toLowerCase();
-        if (receiver === username) throw new Error('Autocommunication is not supported yet');
+        if (receiver === this.username) throw new Error('Autocommunication is not supported yet');
         const hasChat = this.channels.some(e => e.receiver === receiver);
         if (hasChat) throw new Error('You already has this channel');
 
@@ -45,14 +48,14 @@ export default class ChannelListModel {
         const senderRef = firebase
             .firestore()
             .collection(FirebaseCollections.Users)
-            .doc(username);
+            .doc(this.username);
 
         const [receiverDoc, senderDoc] = await Promise.all([receiverRef.get(), senderRef.get()]);
         if (!receiverDoc.exists) throw new Error("User doesn't exist");
 
         const channel = await ChannelListModel.collectionRef.add({
             count: 0,
-            members: [username, receiver],
+            members: [this.username, receiver],
         });
 
         firebase.firestore().runTransaction(async transaction => {
