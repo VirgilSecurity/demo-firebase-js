@@ -6,6 +6,8 @@ import MessageField from '../components/MessageField';
 import { PrimaryButton, LinkButton } from '../components/Primitives';
 import ChatModel from '../models/ChatModel';
 import { IChannel } from '../models/ChannelModel';
+import { virgil } from '../lib/virgil';
+import { KeyknoxLoader } from '../services/KeyLoaders';
 
 const ChatContainer = styled.div`
     max-width: 1024px;
@@ -84,7 +86,33 @@ export default class ChatPage extends React.Component<IChatPageProps, IChatPageS
         const receiver = prompt('receiver', '');
         if (!receiver) return alert('Add receiver please');
         try {
-            await this.model.channelsList.createChannel(receiver, this.model.username);
+            await this.model.channelsList.createChannel(receiver);
+        } catch (e) {
+            alert(e.message);
+        }
+    };
+
+    uploadKey = async () => {
+        const password = prompt('encryption password', '');
+        if (!password) return alert('Add receiver please');
+        try {
+            await virgil.client.changeKeyLoader(
+                new KeyknoxLoader(virgil.client.virgilToolbox, password),
+            );
+        } catch (e) {
+            alert(e.message);
+        }
+    };
+
+    downloadKey = async () => {
+        const password = prompt('encryption password', '');
+        if (!password) return alert('Add receiver please');
+        try {
+            await virgil.client.use(
+                new KeyknoxLoader(virgil.client.virgilToolbox, password),
+            );
+            await virgil.client.keyLoader.loadPrivateKey();
+            virgil.client.signIn();
         } catch (e) {
             alert(e.message);
         }
@@ -114,6 +142,12 @@ export default class ChatPage extends React.Component<IChatPageProps, IChatPageS
                             username={this.state.username!}
                             channels={this.state.hasPrivateKey ? this.state.channels : []}
                         />
+                        <BottomPrimaryButton onClick={this.downloadKey}>
+                            Download Private Key
+                        </BottomPrimaryButton>
+                        <BottomPrimaryButton onClick={this.uploadKey}>
+                            Upload Private Key
+                        </BottomPrimaryButton>
                         <BottomPrimaryButton onClick={this.createChannel}>
                             New Channel
                         </BottomPrimaryButton>

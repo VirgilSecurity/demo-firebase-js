@@ -6,6 +6,7 @@ import ChatWindow from '../components/ChatWindow';
 import ChatModel from '../models/ChatModel';
 import UserApi from '../services/UserApi';
 import Facade from '../services/VirgilApi';
+import { virgil } from '../lib/virgil';
 
 export interface IChatPageProps extends RouteComponentProps<{}> {}
 
@@ -27,6 +28,7 @@ class ChatPage extends React.Component<IChatPageProps, IChatPageState> {
     }
 
     componentDidMount() {
+        // TODO make pretty (virgil event?)
         if (UserApi.instance.client) this.createChatModel(UserApi.instance.client);
         else UserApi.instance.subscribeOnAuthChange(this.createChatModel);
     }
@@ -37,6 +39,7 @@ class ChatPage extends React.Component<IChatPageProps, IChatPageState> {
 
     createChatModel = (facade: Facade | null) => {
         if (facade) {
+            virgil.client.signIn()
             this.setState({ model: new ChatModel(facade) })
         } else {
             this.setState({ isLoggedIn: false })

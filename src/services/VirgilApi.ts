@@ -1,8 +1,4 @@
-import {
-    VirgilCrypto,
-    VirgilCardCrypto,
-    VirgilPythiaCrypto,
-} from 'virgil-crypto/dist/virgil-crypto-pythia.es';
+import { VirgilCrypto, VirgilCardCrypto } from 'virgil-crypto/dist/virgil-crypto-pythia.es';
 import { VirgilPublicKey, VirgilPrivateKeyExporter, VirgilPrivateKey } from 'virgil-crypto';
 import {
     VirgilCardVerifier,
@@ -11,8 +7,9 @@ import {
     PrivateKeyStorage,
     KeyEntryStorage,
 } from 'virgil-sdk';
+import { PrivateKeyLoader, KeyLoader } from './KeyLoaders';
 
-class VirgilToolbox {
+export class VirgilToolbox {
     static jwtEndpoint = 'https://YOUR_ENDPOINT.cloudfunctions.net/api/generate_jwt';
 
     identity: string;
@@ -44,12 +41,12 @@ class VirgilToolbox {
     async createCard() {
         const keyPair = this.virgilCrypto.generateKeys();
 
-        const card = await this.cardManager.publishCard({
+        await this.cardManager.publishCard({
             privateKey: keyPair.privateKey,
             publicKey: keyPair.publicKey,
         });
 
-        return { card, keyPair };
+        return keyPair;
     }
 
     getPublicKeys = async (identity: string) => {
@@ -98,112 +95,36 @@ export class EncryptionClient {
     }
 }
 
-// class PrivateKeyLoader {
-//     constructor(public sdk: VirgilToolbox) {}
-
-//     async loadPrivateKey() {
-//         const privateKeyData = await this.sdk.keyStorage.load(this.sdk.identity);
-//         if (!privateKeyData) throw new Error('key not found');
-//         return privateKeyData.privateKey as VirgilPrivateKey;
-//     }
-
-//     savePrivateKey(privateKey: VirgilPrivateKey) {
-//         this.sdk.keyStorage.store(this.sdk.identity, privateKey);
-//     }
-// }
-
-import { createBrainKey } from 'virgil-pythia';
-import {
-    SyncKeyStorage,
-    CloudKeyStorage,
-    KeyknoxManager,
-    KeyknoxCrypto,
-} from '@virgilsecurity/keyknox';
-
-interface IBrainKey {
-    generateKeyPair(
-        password: string,
-        id?: string,
-    ): Promise<{
-        privateKey: VirgilPrivateKey;
-        publicKey: VirgilPublicKey;
-    }>;
-}
-
-class KeyknoxLoader {
-    pythiaCrypto = new VirgilPythiaCrypto();
-    brainKey: IBrainKey;
-    storage?: SyncKeyStorage;
-
-    constructor(public sdk: VirgilToolbox) {
-
-    }
-
-    async loadPrivateKey() {
-        if (!this.storage) throw new Error('storage not exists');
-        await this.storage.sync();
-        const key = await this.storage.retrieveEntry(this.sdk.identity);
-        console.log('loadPrivateKey', key);
-        return this.sdk.virgilCrypto.importPrivateKey(key.value);
-    }
-
-    async savePrivateKey(privateKey: VirgilPrivateKey) {
-        if (!this.storage) throw new Error('storage not exists');
-        console.log('savePrivateKey', await this.storage.retrieveAllEntries);
-        await this.storage.sync();
-        await this.storage.storeEntry(this.sdk.identity, this.sdk.virgilCrypto.exportPrivateKey(privateKey))
-        // tslint:disable-next-line:no-console
-        console.log('savePrivateKey', await this.storage.retrieveAllEntries);
-    }
-
-    async createSyncStorage(password: string, id?: string) {
-        const { privateKey, publicKey } = await createBrainKey({
-            virgilCrypto: this.sdk.virgilCrypto,
-            virgilPythiaCrypto: this.pythiaCrypto,
-            accessTokenProvider: this.sdk.jwtProvider,
-        }).generateKeyPair(password, id);
-        this.storage = new SyncKeyStorage(
-            new CloudKeyStorage(
-                new KeyknoxManager(
-                    this.sdk.jwtProvider,
-                    privateKey,
-                    publicKey,
-                    undefined,
-                    new KeyknoxCrypto(this.sdk.virgilCrypto),
-                ),
-            ),
-            this.sdk.keyEntryStorage,
-        );
-    }
-}
-
 export default class Facade {
     virgilToolbox: VirgilToolbox;
-    privateKeyLoader: KeyknoxLoader;
-    private _encryptionClient?: EncryptionClient;
+    keyLoader: KeyLoader;
+    private _encryptionClient?: Promise<EncryptionClient>;
     private _receiverStore: Receiver[] = [];
 
     get encryptionClient() {
-        if (!this._encryptionClient)
-            return this.privateKeyLoader.createSyncStorage('qwerty123').then(() => this.signIn());
-        return Promise.resolve(this._encryptionClient);
+        if (!this._encryptionClient) throw Error('sign up or sign in first');
+        return this._encryptionClient;
     }
 
     constructor(public identity: string, public getToken: (identity: string) => Promise<string>) {
         this.virgilToolbox = new VirgilToolbox(identity, getToken);
-        this.privateKeyLoader = new KeyknoxLoader(this.virgilToolbox);
+        this.keyLoader = new PrivateKeyLoader(this.virgilToolbox);
+    }
+
+    use(loader: KeyLoader) {
+        this.keyLoader = loader;
     }
 
     async signUp() {
+        const keyPair = this.virgilToolbox.createCard();
+        const promise = keyPair.then(({ privateKey, publicKey }) => ({
+            privateKey,
+            publicKeys: [publicKey],
+        }));
+        this._encryptionClient = this.initClient(promise) as Promise<EncryptionClient>;
         try {
-            const { keyPair } = await this.virgilToolbox.createCard();
-            await this.privateKeyLoader.savePrivateKey(keyPair.privateKey);
-            console.log('signUp')
-            this._encryptionClient = new EncryptionClient(
-                keyPair.privateKey,
-                [keyPair.publicKey],
-                this.virgilToolbox.virgilCrypto,
-            );
+            const { privateKey } = await keyPair;
+            this.keyLoader.savePrivateKey(privateKey);
         } catch (e) {
             throw e;
         }
@@ -212,13 +133,11 @@ export default class Facade {
     }
 
     async signIn() {
-        const privateKey = await this.privateKeyLoader.loadPrivateKey();
-        const publicKeys = await this.virgilToolbox.getPublicKeys(this.identity);
-        this._encryptionClient = new EncryptionClient(
-            privateKey,
-            publicKeys,
-            this.virgilToolbox.virgilCrypto,
-        );
+        const keyPair = Promise.all([
+            this.keyLoader.loadPrivateKey(),
+            this.virgilToolbox.getPublicKeys(this.identity),
+        ]).then(([privateKey, publicKeys]) => ({ privateKey, publicKeys }));
+        this._encryptionClient = this.initClient(keyPair) as Promise<EncryptionClient>;
         return this._encryptionClient;
     }
 
@@ -239,5 +158,22 @@ export default class Facade {
             this._receiverStore.push(receiver);
         }
         return receiver;
+    }
+
+    async initClient(
+        promise: Promise<{ privateKey: VirgilPrivateKey; publicKeys: VirgilPublicKey[] }>,
+    ) {
+        return new Promise((resolve, reject) => {
+            promise
+                .then(({ privateKey, publicKeys }) => {
+                    const client = new EncryptionClient(
+                        privateKey,
+                        publicKeys,
+                        this.virgilToolbox.virgilCrypto,
+                    );
+                    resolve(client);
+                })
+                .catch(reject);
+        });
     }
 }

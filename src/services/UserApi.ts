@@ -1,6 +1,7 @@
 import firebase from 'firebase';
 import { FirebaseCollections } from './FirebaseCollections';
 import Facade from './VirgilApi';
+import { virgil } from '../lib/virgil';
 
 export type AuthHandler = (client: Facade | null) => void;
 
@@ -24,7 +25,6 @@ class UserApi {
             if (user) {
                 const client = await this.createVirgilClient(user);
                 if (this._onAuthChange) this._onAuthChange(client);
-                this.client = client;
             } else {
                 if (this._onAuthChange) this._onAuthChange(null);
             }
@@ -45,18 +45,20 @@ class UserApi {
         } catch (e) {
             throw e;
         }
-
-        const client = this.createVirgilClient(user.user!);
-        await client.privateKeyLoader.createSyncStorage('qwerty123');
-        await client.signUp();
         this.collectionRef.doc(username).set({
             createdAt: new Date(),
             channels: [],
         });
+
+        virgil.client.signUp();
+        return user;
     }
 
     async signIn(username: string, password: string) {
-        return await firebase.auth().signInWithEmailAndPassword(username + this.postfix, password);
+        return await firebase
+            .auth()
+            .signInWithEmailAndPassword(username + this.postfix, password)
+            .then(() => virgil.client.signIn());
     }
 
     getJwt = async (identity: string) => {
@@ -64,14 +66,17 @@ class UserApi {
         const token = await this.user.getIdToken();
         let response;
         try {
-            response = await fetch('https:///us-central1-js-chat-ff5ca.cloudfunctions.net/api/generate_jwt', {
-                headers: new Headers({
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                }),
-                method: 'POST',
-                body: JSON.stringify({ identity }),
-            });
+            response = await fetch(
+                'https:///us-central1-js-chat-ff5ca.cloudfunctions.net/api/generate_jwt',
+                {
+                    headers: new Headers({
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${token}`,
+                    }),
+                    method: 'POST',
+                    body: JSON.stringify({ identity }),
+                },
+            );
         } catch (e) {
             throw new Error(e);
         }
@@ -85,7 +90,8 @@ class UserApi {
     private createVirgilClient = (user: firebase.User) => {
         if (!user) throw new Error('No user');
         const username = user.email!.replace('@virgilfirebase.com', '');
-        return new Facade(username, this.getJwt);
+        this.client = virgil.bootstrap(username, this.getJwt);
+        return this.client;
     };
 }
 
