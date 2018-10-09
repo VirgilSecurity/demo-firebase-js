@@ -7,7 +7,8 @@ import {
     PrivateKeyStorage,
     KeyEntryStorage,
 } from 'virgil-sdk';
-import { PrivateKeyLoader, KeyLoader } from './KeyLoaders';
+import { PrivateKeyLoader, KeyLoader, KeyknoxLoader } from './KeyLoaders';
+import EventEmitter from 'wolfy87-eventemitter';
 
 export class VirgilToolbox {
     static jwtEndpoint = 'https://YOUR_ENDPOINT.cloudfunctions.net/api/generate_jwt';
@@ -74,22 +75,22 @@ export class Receiver {
 export class EncryptionClient {
     constructor(
         private privateKey: VirgilPrivateKey,
-        private publicKeys: VirgilPublicKey[],
+        private publicKey: VirgilPublicKey[],
         private virgilCrypto: VirgilCrypto,
     ) {}
 
-    async encrypt(message: string, receiver: Receiver) {
+    encrypt(message: string, publicKeys: VirgilPublicKey[]) {
         const encryptedData = this.virgilCrypto.encrypt(
             message,
             // encrypted public keys of sender are added to add possibility to decrypt
             // message from other device
-            [...(await receiver.publicKeys), ...this.publicKeys] as VirgilPublicKey[],
+            [...publicKeys, this.publicKey] as VirgilPublicKey[],
         );
 
         return encryptedData.toString('base64');
     }
 
-    async decrypt(message: string) {
+    decrypt(message: string) {
         const decryptedData = this.virgilCrypto.decrypt(message, this.privateKey);
         return decryptedData.toString('utf8');
     }
@@ -100,9 +101,10 @@ export default class Facade {
     keyLoader: KeyLoader;
     private _encryptionClient?: Promise<EncryptionClient>;
     private _receiverStore: Receiver[] = [];
+    private encryptionEmitter = new EventEmitter();
 
-    get encryptionClient() {
-        if (!this._encryptionClient) throw Error('sign up or sign in first');
+    private get encryptionClient() {
+        if (!this._encryptionClient) throw new Error('sign in or sign up first');
         return this._encryptionClient;
     }
 
@@ -115,35 +117,37 @@ export default class Facade {
         this.keyLoader = loader;
     }
 
-    async signUp() {
-        const keyPair = this.virgilToolbox.createCard();
-        const promise = keyPair.then(({ privateKey, publicKey }) => ({
-            privateKey,
-            publicKeys: [publicKey],
-        }));
-        this._encryptionClient = this.initClient(promise) as Promise<EncryptionClient>;
+    async bootstrap(password?: string) {
+        this._encryptionClient = this.initClient();
+        if (password) this.use(new KeyknoxLoader(this.virgilToolbox, password));
+
+        let privateKey: VirgilPrivateKey | null, publicKeys: VirgilPublicKey[];
+
         try {
-            const { privateKey } = await keyPair;
-            this.keyLoader.savePrivateKey(privateKey);
+            [privateKey, publicKeys] = await Promise.all([
+                this.keyLoader.loadPrivateKey().catch(e => { console.log(e); return null }),
+                this.virgilToolbox.getPublicKeys(this.identity),
+            ]);
+
+            if (!privateKey) {
+                const keypair = await this.virgilToolbox.createCard();
+                privateKey = keypair.privateKey;
+                publicKeys = [...publicKeys, keypair.publicKey];
+                await this.keyLoader.savePrivateKey(privateKey);
+            }
         } catch (e) {
+            this.encryptionEmitter.emit('error', e);
             throw e;
         }
 
-        return this._encryptionClient;
-    }
-
-    async signIn() {
-        const keyPair = Promise.all([
-            this.keyLoader.loadPrivateKey(),
-            this.virgilToolbox.getPublicKeys(this.identity),
-        ]).then(([privateKey, publicKeys]) => ({ privateKey, publicKeys }));
-        this._encryptionClient = this.initClient(keyPair) as Promise<EncryptionClient>;
-        return this._encryptionClient;
+        const client = new EncryptionClient(privateKey, publicKeys, this.virgilToolbox.virgilCrypto);
+        this.encryptionEmitter.emit('init', client);
     }
 
     async encrypt(message: string, username: string) {
         const client = await this.encryptionClient;
-        return client.encrypt(message, this.getReceiver(username));
+        const receiver = this.getReceiver(username);
+        return client.encrypt(message, await receiver.publicKeys);
     }
 
     async decrypt(message: string) {
@@ -160,20 +164,10 @@ export default class Facade {
         return receiver;
     }
 
-    async initClient(
-        promise: Promise<{ privateKey: VirgilPrivateKey; publicKeys: VirgilPublicKey[] }>,
-    ) {
+    initClient = () => {
         return new Promise((resolve, reject) => {
-            promise
-                .then(({ privateKey, publicKeys }) => {
-                    const client = new EncryptionClient(
-                        privateKey,
-                        publicKeys,
-                        this.virgilToolbox.virgilCrypto,
-                    );
-                    resolve(client);
-                })
-                .catch(reject);
-        });
-    }
+            this.encryptionEmitter.once('init', resolve);
+            this.encryptionEmitter.once('error', reject);
+        }) as Promise<EncryptionClient>;
+    };
 }

@@ -14,7 +14,7 @@ export abstract class KeyLoader {
     constructor(public sdk: VirgilToolbox) {}
 
     abstract savePrivateKey(privateKey: VirgilPrivateKey): void;
-    abstract loadPrivateKey(): Promise<VirgilPrivateKey>;
+    abstract loadPrivateKey(): Promise<VirgilPrivateKey | null>;
 }
 
 export class PrivateKeyLoader extends KeyLoader {
@@ -22,9 +22,9 @@ export class PrivateKeyLoader extends KeyLoader {
         super(sdk);
     }
 
-    async loadPrivateKey() {
+    async loadPrivateKey(): Promise<VirgilPrivateKey | null> {
         const privateKeyData = await this.sdk.keyStorage.load(this.sdk.identity);
-        if (!privateKeyData) throw new Error('key not found');
+        if (!privateKeyData) return null;
         return privateKeyData.privateKey as VirgilPrivateKey;
     }
 

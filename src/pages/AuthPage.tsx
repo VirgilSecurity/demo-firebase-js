@@ -5,6 +5,7 @@ import { withRouter, RouteComponentProps } from 'react-router';
 import { Routes } from '../services/Routes';
 import { FormikActions } from 'formik';
 import UserApi from '../services/UserApi';
+import { virgil } from '../lib/virgil';
 
 const Background = styled.div`
     display: flex;
@@ -39,7 +40,7 @@ class AuthPage extends React.Component<RouteComponentProps<IAuthPageProps>, IAut
 
     handleSignUp = async (values: IAuthFormValues, actions: FormikActions<IAuthFormValues>) => {
         try {
-            await UserApi.instance.signUp(values.username, values.password);
+            await UserApi.instance.signUp(values.username, values.password, values.brainkeyPassword);
             this.props.history.push(Routes.index);
         } catch (e) {
             actions.setErrors({ username: e.message });
@@ -48,7 +49,7 @@ class AuthPage extends React.Component<RouteComponentProps<IAuthPageProps>, IAut
 
     handleSignIn = async (values: IAuthFormValues, actions: FormikActions<IAuthFormValues>) => {
         try {
-            await UserApi.instance.signIn(values.username, values.password);
+            await UserApi.instance.signIn(values.username, values.password, values.brainkeyPassword);
             this.props.history.push(Routes.index);
         } catch (e) {
             actions.setErrors({ username: e.message });

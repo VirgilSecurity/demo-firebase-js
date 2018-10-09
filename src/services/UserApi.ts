@@ -35,7 +35,7 @@ class UserApi {
         this._onAuthChange = cb;
     }
 
-    async signUp(username: string, password: string) {
+    async signUp(username: string, password: string, brainkeyPassword?: string) {
         username = username.toLocaleLowerCase();
         let user: firebase.auth.UserCredential;
         try {
@@ -50,15 +50,17 @@ class UserApi {
             channels: [],
         });
 
-        virgil.client.signUp();
+        virgil.client.bootstrap(brainkeyPassword);
         return user;
     }
 
-    async signIn(username: string, password: string) {
-        return await firebase
+    async signIn(username: string, password: string, brainkeyPassword?: string) {
+        await firebase
             .auth()
             .signInWithEmailAndPassword(username + this.postfix, password)
-            .then(() => virgil.client.signIn());
+
+        virgil.client.bootstrap(brainkeyPassword);
+
     }
 
     getJwt = async (identity: string) => {

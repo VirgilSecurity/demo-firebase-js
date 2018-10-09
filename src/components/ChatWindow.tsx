@@ -92,32 +92,6 @@ export default class ChatPage extends React.Component<IChatPageProps, IChatPageS
         }
     };
 
-    uploadKey = async () => {
-        const password = prompt('encryption password', '');
-        if (!password) return alert('Add receiver please');
-        try {
-            await virgil.client.changeKeyLoader(
-                new KeyknoxLoader(virgil.client.virgilToolbox, password),
-            );
-        } catch (e) {
-            alert(e.message);
-        }
-    };
-
-    downloadKey = async () => {
-        const password = prompt('encryption password', '');
-        if (!password) return alert('Add receiver please');
-        try {
-            await virgil.client.use(
-                new KeyknoxLoader(virgil.client.virgilToolbox, password),
-            );
-            await virgil.client.keyLoader.loadPrivateKey();
-            virgil.client.signIn();
-        } catch (e) {
-            alert(e.message);
-        }
-    };
-
     selectChannel = (channelInfo: IChannel) => this.model.listenMessages(channelInfo);
 
     render() {
@@ -142,12 +116,6 @@ export default class ChatPage extends React.Component<IChatPageProps, IChatPageS
                             username={this.state.username!}
                             channels={this.state.hasPrivateKey ? this.state.channels : []}
                         />
-                        <BottomPrimaryButton onClick={this.downloadKey}>
-                            Download Private Key
-                        </BottomPrimaryButton>
-                        <BottomPrimaryButton onClick={this.uploadKey}>
-                            Upload Private Key
-                        </BottomPrimaryButton>
                         <BottomPrimaryButton onClick={this.createChannel}>
                             New Channel
                         </BottomPrimaryButton>
