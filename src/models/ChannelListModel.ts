@@ -7,7 +7,7 @@ export default class ChannelListModel {
     static collectionRef = firebase.firestore().collection(FirebaseCollections.Channels);
     channels: ChannelModel[] = [];
 
-    constructor(public username: string, public virgilApi: VirgilApi) {}
+    constructor(public username: string, readonly virgilApi: VirgilApi) {}
 
     getChannel(channelId: string) {
         const channel = this.channels.find(e => e.id === channelId);

@@ -37,7 +37,7 @@ class ChatPage extends React.Component<IChatPageProps, IChatPageState> {
 
     createChatModel = (params: UserParams) => {
         if (params) {
-            this.setState({ model: new ChatModel(params.username, params.virgilApi ) })
+            this.setState({ model: new ChatModel(params.username, params.virgilApi) })
         } else {
             this.setState({ isLoggedIn: false })
         }
