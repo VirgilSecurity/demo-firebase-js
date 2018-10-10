@@ -1,23 +1,14 @@
 import VirgilApi from '../services/VirgilApi';
 import MessagesListModel, { IMessage } from './MessageListModel';
-import { VirgilPublicKey } from 'virgil-crypto';
 
 export default class EncryptedMessageList {
-    receiverPublicKeys: Promise<VirgilPublicKey[]>;
 
     constructor(readonly messageList: MessagesListModel, readonly virgilApi: VirgilApi) {
-        this.receiverPublicKeys = this.getReceiverPublicKeys();
+        virgilApi.getReceiver(this.messageList.channel.receiver).preloadKeys();
     }
 
     async sendMessage(message: string) {
-        const receiverPublicKeys = await this.receiverPublicKeys;
-        if (!receiverPublicKeys.length) {
-            throw new Error(
-                'Receiver public keys not found. Please login again with your receiver.',
-            );
-        }
-
-        const encryptedMessage = await this.virgilApi.encrypt(message, receiverPublicKeys);
+        const encryptedMessage = await this.virgilApi.encrypt(message, this.messageList.channel.receiver);
 
         this.messageList.sendMessage(encryptedMessage);
     }
@@ -30,9 +21,5 @@ export default class EncryptedMessageList {
             messages.forEach((m, i) => (m.body = decryptedBodies[i]));
             cb(messages);
         });
-    }
-
-    private getReceiverPublicKeys() {
-        return this.virgilApi.getPublicKeys(this.messageList.channel.receiver);
     }
 }

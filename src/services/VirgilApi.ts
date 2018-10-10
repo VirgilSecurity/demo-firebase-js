@@ -84,7 +84,7 @@ export class EncryptionClient {
             message,
             // encrypted public keys of sender are added to add possibility to decrypt
             // message from other device
-            [...publicKeys, this.publicKey] as VirgilPublicKey[],
+            [...publicKeys, ...this.publicKey] as VirgilPublicKey[],
         );
 
         return encryptedData.toString('base64');

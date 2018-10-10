@@ -32,6 +32,7 @@ Please try to reload page. If problem not solved, please contact support
             await currentChannel.sendMessage(message);
         } catch (error) {
             this.state.setState({ error });
+            console.error(error);
         }
     };
 
