@@ -172,6 +172,6 @@ export default class Facade {
     };
 
     getPublicKeys(username: string) {
-        this.virgilToolbox.getPublicKeys(username);
+        return this.virgilToolbox.getPublicKeys(username);
     }
 }
