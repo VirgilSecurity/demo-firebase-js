@@ -2,27 +2,18 @@ import AppState from './AppState';
 import firebase from 'firebase';
 import ChannelListModel from './ChannelListModel';
 import { IChannel } from './ChannelModel';
-import Facade from '../services/VirgilApi';
+import VirgilE2ee from '../lib/VirgilE2ee';
 
 export class ChatModel {
     state = new AppState();
-    channelsList = new ChannelListModel(this.facade);
+    channelsList = new ChannelListModel(this.virgilE2ee);
 
     channelsListener?: firebase.Unsubscribe;
     messageListener?: firebase.Unsubscribe;
 
-    constructor(public facade: Facade) {
-        this.listenChannels(this.facade.identity);
-        this.state.setState({ username: this.facade.identity });
-        this.facade.encryptionClient
-            .then(() => this.state.setState({ hasPrivateKey: true }))
-            .catch(error => {
-                const errorMessage = `Failed to load user private key:
-${error ? error.message : 'Unknown error'}
-Please try to reload page. If problem not solved, please contact support
-`;
-                this.state.setState({ error: errorMessage });
-            });
+    constructor(public virgilE2ee: VirgilE2ee) {
+        this.listenChannels(this.virgilE2ee.identity);
+        this.state.setState({ username: this.virgilE2ee.identity });
     }
 
     sendMessage = async (message: string) => {

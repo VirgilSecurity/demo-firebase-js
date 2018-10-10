@@ -1,15 +1,14 @@
 import firebase from 'firebase';
 import { FirebaseCollections } from './FirebaseCollections';
-import Facade from './VirgilApi';
-import { virgil } from '../lib/virgil';
+import VirgilE2ee from '../lib/VirgilE2ee';
 
-export type AuthHandler = (client: Facade | null) => void;
+export type AuthHandler = (client: VirgilE2ee | null) => void;
 
 class UserApi {
     postfix = '@virgilfirebase.com';
     collectionRef = firebase.firestore().collection(FirebaseCollections.Users);
     user: firebase.User | null = null;
-    client?: Facade;
+    virgilE2ee?: VirgilE2ee;
 
     private _onAuthChange: AuthHandler | null = null;
     private static _instance: UserApi | null = null;
@@ -49,8 +48,8 @@ class UserApi {
             createdAt: new Date(),
             channels: [],
         });
-
-        virgil.client.bootstrap(brainkeyPassword);
+        if (!this.virgilE2ee) throw new Error('virgil e2ee not initialized');
+        this.virgilE2ee.bootstrap(brainkeyPassword);
         return user;
     }
 
@@ -58,8 +57,9 @@ class UserApi {
         await firebase
             .auth()
             .signInWithEmailAndPassword(username + this.postfix, password)
-
-        virgil.client.bootstrap(brainkeyPassword);
+        
+        if (!this.virgilE2ee) throw new Error('virgil e2ee not initialized');
+        this.virgilE2ee.bootstrap(brainkeyPassword);
 
     }
 
@@ -91,9 +91,8 @@ class UserApi {
 
     private createVirgilClient = (user: firebase.User) => {
         if (!user) throw new Error('No user');
-        const username = user.email!.replace('@virgilfirebase.com', '');
-        this.client = virgil.bootstrap(username, this.getJwt);
-        return this.client;
+        const username = user.email!.replace('@virgilfirebase.com', '').toLocaleLowerCase();
+        return new VirgilE2ee(username, this.getJwt);
     };
 }
 

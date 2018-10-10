@@ -5,7 +5,6 @@ import { withRouter, RouteComponentProps } from 'react-router';
 import { Routes } from '../services/Routes';
 import { FormikActions } from 'formik';
 import UserApi from '../services/UserApi';
-import { virgil } from '../lib/virgil';
 
 const Background = styled.div`
     display: flex;

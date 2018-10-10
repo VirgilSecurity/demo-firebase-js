@@ -26,7 +26,7 @@ class ChatPage extends React.Component<IChatPageProps, IChatPageState> {
     }
 
     componentDidMount() {
-        if (UserApi.instance.client) this.createChatModel(UserApi.instance.client);
+        if (UserApi.instance.virgilE2ee) this.createChatModel(UserApi.instance.virgilE2ee);
         else UserApi.instance.subscribeOnAuthChange(this.createChatModel);
     }
     

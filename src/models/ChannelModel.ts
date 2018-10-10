@@ -1,8 +1,7 @@
-import MessagesListModel from './MessageListModel';
-import { IMessage } from '../components/Messages';
-import Facade from '../services/VirgilApi';
+import MessagesListModel, { IMessage } from './MessageListModel';
 import MessageStorage from './MessageStorage';
 import EncryptedMessageList from './EncryptedMessageList';
+import VirgilE2ee from '../lib/VirgilE2ee';
 
 export interface IChannel {
     id: string;
@@ -20,7 +19,7 @@ export default class ChannelModel implements IChannel {
     constructor(
         { id, count, members }: IChannel,
         public sender: string,
-        public facade: Facade,
+        public virgilE2ee: VirgilE2ee,
     ) {
         this.id = id;
         this.count = count;
@@ -29,7 +28,7 @@ export default class ChannelModel implements IChannel {
 
         const messageList = new MessagesListModel(this, this.sender);
 
-        this.encryptedMessageList = new EncryptedMessageList(messageList, facade);
+        this.encryptedMessageList = new EncryptedMessageList(messageList, virgilE2ee);
     }
 
     get receiver() {

@@ -5,33 +5,11 @@ import {
     KeyknoxManager,
     KeyknoxCrypto,
 } from '@virgilsecurity/keyknox';
-import { VirgilPythiaCrypto } from 'virgil-crypto/dist/virgil-crypto-pythia.es';
-import { VirgilToolbox } from './VirgilApi';
-import { VirgilPrivateKey, VirgilPublicKey } from 'virgil-crypto';
+import { VirgilPythiaCrypto, VirgilPublicKey } from 'virgil-crypto/dist/virgil-crypto-pythia.es';
+import VirgilToolbox from '../VirgilToolbox';
+import { VirgilPrivateKey } from 'virgil-crypto';
 import { KeyEntryStorage } from 'virgil-sdk';
-
-export abstract class KeyLoader {
-    constructor(public sdk: VirgilToolbox) {}
-
-    abstract savePrivateKey(privateKey: VirgilPrivateKey): void;
-    abstract loadPrivateKey(): Promise<VirgilPrivateKey | null>;
-}
-
-export class PrivateKeyLoader extends KeyLoader {
-    constructor(public sdk: VirgilToolbox) {
-        super(sdk);
-    }
-
-    async loadPrivateKey(): Promise<VirgilPrivateKey | null> {
-        const privateKeyData = await this.sdk.keyStorage.load(this.sdk.identity);
-        if (!privateKeyData) return null;
-        return privateKeyData.privateKey as VirgilPrivateKey;
-    }
-
-    savePrivateKey(privateKey: VirgilPrivateKey) {
-        this.sdk.keyStorage.store(this.sdk.identity, privateKey);
-    }
-}
+import KeyLoader from './KeyLoader';
 
 export interface IBrainKey {
     generateKeyPair(
@@ -43,7 +21,7 @@ export interface IBrainKey {
     }>;
 }
 
-export class KeyknoxLoader extends KeyLoader {
+export default class KeyknoxLoader extends KeyLoader {
     pythiaCrypto = new VirgilPythiaCrypto();
     brainKey: IBrainKey;
     storage: Promise<SyncKeyStorage>;
