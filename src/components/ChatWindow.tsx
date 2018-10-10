@@ -1,13 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
 import Channels from '../components/Channels';
-import Messages, { IMessage } from '../components/Messages';
+import Messages from '../components/Messages';
 import MessageField from '../components/MessageField';
 import { PrimaryButton, LinkButton } from '../components/Primitives';
 import ChatModel from '../models/ChatModel';
 import { IChannel } from '../models/ChannelModel';
-import { virgil } from '../lib/virgil';
-import { KeyknoxLoader } from '../services/KeyLoaders';
+import { IMessage } from '../models/MessageListModel';
 
 const ChatContainer = styled.div`
     max-width: 1024px;

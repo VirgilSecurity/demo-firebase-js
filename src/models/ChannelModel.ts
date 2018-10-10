@@ -1,6 +1,8 @@
 import MessagesListModel from './MessageListModel';
 import { IMessage } from '../components/Messages';
 import Facade from '../services/VirgilApi';
+import MessageStorage from './MessageStorage';
+import EncryptedMessageList from './EncryptedMessageList';
 
 export interface IChannel {
     id: string;
@@ -12,7 +14,8 @@ export default class ChannelModel implements IChannel {
     public id: string;
     public count: number;
     public members: string[];
-    public messageList: MessagesListModel;
+    private messageStorage: MessageStorage;
+    private encryptedMessageList: EncryptedMessageList;
 
     constructor(
         { id, count, members }: IChannel,
@@ -22,7 +25,11 @@ export default class ChannelModel implements IChannel {
         this.id = id;
         this.count = count;
         this.members = members;
-        this.messageList = new MessagesListModel(this, this.sender, this.facade);
+        this.messageStorage = new MessageStorage(this.id);
+
+        const messageList = new MessagesListModel(this, this.sender);
+
+        this.encryptedMessageList = new EncryptedMessageList(messageList, facade);
     }
 
     get receiver() {
@@ -31,13 +38,16 @@ export default class ChannelModel implements IChannel {
 
     async sendMessage(message: string) {
         try {
-            return this.messageList.sendMessage(message);
-        } catch(e) {
+            return this.encryptedMessageList.sendMessage(message);
+        } catch (e) {
             throw e;
         }
     }
 
     listenMessages(cb: (messages: IMessage[]) => void) {
-        return this.messageList.listenUpdates(this.id, cb);
+        return this.encryptedMessageList.listenUpdates(this.id, newMessages => {
+            const allMessages = this.messageStorage.addMessages(newMessages);
+            cb(allMessages); 
+        });
     }
 }

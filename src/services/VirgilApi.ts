@@ -170,4 +170,8 @@ export default class Facade {
             this.encryptionEmitter.once('error', reject);
         }) as Promise<EncryptionClient>;
     };
+
+    getPublicKeys(username: string) {
+        this.virgilToolbox.getPublicKeys(username);
+    }
 }
