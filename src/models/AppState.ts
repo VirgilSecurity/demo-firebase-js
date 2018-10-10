@@ -1,18 +1,26 @@
 import EventEmitter from "wolfy87-eventemitter";
-import { IChatPageState } from "../components/ChatWindow";
+import { IChannel } from "./ChannelModel";
+import { IMessage } from "./MessageListModel";
+
+export interface IAppState {
+    error: null | Error | string;
+    username: string | null;
+    channels: IChannel[];
+    messages: IMessage[];
+    currentChannel: IChannel | null;
+}
 
 export default class AppState extends EventEmitter {
 
-    store: IChatPageState = {
+    store: IAppState = {
         error: null,
         username: null,
-        hasPrivateKey: false,
         currentChannel: null,
         channels: [],
         messages: [],
     }
 
-    setState(state: Partial<IChatPageState>) {
+    setState(state: Partial<IAppState>) {
         const newState = Object.assign(this.store, state);
         this.emit('change', newState);
     }

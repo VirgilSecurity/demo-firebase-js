@@ -4,6 +4,7 @@ import { EncryptionClient } from './VirgilClient';
 import VirgilToolbox from './virgilToolbox';
 import EventEmitter from 'wolfy87-eventemitter';
 import { VirgilReceiver } from './VirgilReciever';
+import { CloudEntryDoesntExistError } from '@virgilsecurity/keyknox';
 
 export default class VirgilE2ee {
     virgilToolbox: VirgilToolbox;
@@ -30,7 +31,10 @@ export default class VirgilE2ee {
 
         try {
             [privateKey, publicKeys] = await Promise.all([
-                this.keyLoader.loadPrivateKey().catch(e => { console.error(e); return null }),
+                this.keyLoader.loadPrivateKey().catch(e => {
+                    if (e instanceof CloudEntryDoesntExistError) return null;
+                    else throw e;
+                }),
                 this.virgilToolbox.getPublicKeys(this.identity),
             ]);
 

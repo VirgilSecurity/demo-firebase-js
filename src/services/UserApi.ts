@@ -22,8 +22,8 @@ class UserApi {
         firebase.auth().onAuthStateChanged(async user => {
             this.user = user;
             if (user) {
-                const client = await this.createVirgilClient(user);
-                if (this._onAuthChange) this._onAuthChange(client);
+                this.virgilE2ee = this.createVirgilClient(user);
+                if (this._onAuthChange) this._onAuthChange(this.virgilE2ee);
             } else {
                 if (this._onAuthChange) this._onAuthChange(null);
             }
@@ -49,8 +49,7 @@ class UserApi {
             channels: [],
         });
         if (!this.virgilE2ee) throw new Error('virgil e2ee not initialized');
-        this.virgilE2ee.bootstrap(brainkeyPassword);
-        return user;
+        return await this.virgilE2ee.bootstrap(brainkeyPassword);
     }
 
     async signIn(username: string, password: string, brainkeyPassword?: string) {
@@ -59,8 +58,7 @@ class UserApi {
             .signInWithEmailAndPassword(username + this.postfix, password)
         
         if (!this.virgilE2ee) throw new Error('virgil e2ee not initialized');
-        this.virgilE2ee.bootstrap(brainkeyPassword);
-
+        return await this.virgilE2ee.bootstrap(brainkeyPassword);
     }
 
     getJwt = async (identity: string) => {

@@ -23,7 +23,7 @@ export class ChatModel {
             await currentChannel.sendMessage(message);
         } catch (error) {
             this.state.setState({ error });
-            console.error(error);
+            throw error;
         }
     };
 

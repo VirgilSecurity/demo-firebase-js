@@ -5,7 +5,7 @@ import { Routes } from '../services/Routes';
 import ChatWindow from '../components/ChatWindow';
 import ChatModel from '../models/ChatModel';
 import UserApi from '../services/UserApi';
-import Facade from '../services/VirgilApi';
+import VirgilE2ee from '../lib/VirgilE2ee';
 
 export interface IChatPageProps extends RouteComponentProps<{}> {}
 
@@ -34,7 +34,7 @@ class ChatPage extends React.Component<IChatPageProps, IChatPageState> {
         UserApi.instance.subscribeOnAuthChange(null);
     }
 
-    createChatModel = (facade: Facade | null) => {
+    createChatModel = (facade: VirgilE2ee | null) => {
         if (facade) {
             this.setState({ model: new ChatModel(facade) })
         } else {

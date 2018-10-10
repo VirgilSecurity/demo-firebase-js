@@ -6,7 +6,7 @@ import MessageField from '../components/MessageField';
 import { PrimaryButton, LinkButton } from '../components/Primitives';
 import ChatModel from '../models/ChatModel';
 import { IChannel } from '../models/ChannelModel';
-import { IMessage } from '../models/MessageListModel';
+import { IAppState } from '../models/AppState';
 
 const ChatContainer = styled.div`
     max-width: 1024px;
@@ -60,16 +60,7 @@ export interface IChatPageProps {
     signOut: () => void;
 }
 
-export interface IChatPageState {
-    error: null | Error | string;
-    username: string | null;
-    hasPrivateKey: boolean;
-    channels: IChannel[];
-    messages: IMessage[];
-    currentChannel: IChannel | null;
-}
-
-export default class ChatPage extends React.Component<IChatPageProps, IChatPageState> {
+export default class ChatPage extends React.Component<IChatPageProps, IAppState> {
     model = this.props.model;
     state = this.model.state.store;
 
@@ -113,23 +104,17 @@ export default class ChatPage extends React.Component<IChatPageProps, IChatPageS
                         <Channels
                             onClick={this.selectChannel}
                             username={this.state.username!}
-                            channels={this.state.hasPrivateKey ? this.state.channels : []}
+                            channels={this.state.channels}
                         />
                         <BottomPrimaryButton onClick={this.createChannel}>
                             New Channel
                         </BottomPrimaryButton>
                     </SideBar>
                     <ChatWorkspace>
-                        {!this.state.hasPrivateKey ? (
-                            'Loading Virgil Credentials'
-                        ) : this.state.currentChannel ? (
-                            <React.Fragment>
-                                <Messages messages={this.state.messages} />
-                                <MessageField handleSend={this.model.sendMessage} />
-                            </React.Fragment>
-                        ) : (
-                            'Please Select Channel'
-                        )}
+                        <React.Fragment>
+                            <Messages messages={this.state.messages} />
+                            <MessageField handleSend={this.model.sendMessage} />
+                        </React.Fragment>
                     </ChatWorkspace>
                 </ChatLayout>
             </ChatContainer>
