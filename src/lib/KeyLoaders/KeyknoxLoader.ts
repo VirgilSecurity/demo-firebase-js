@@ -35,13 +35,10 @@ export default class KeyknoxLoader {
         });
     }
 
-    async loadLocalPrivateKey() {
-        const privateKeyData = await this.localStorage.load(this.toolbox.identity);
-        if (!privateKeyData) return null;
-        return this.toolbox.virgilCrypto.importPrivateKey(privateKeyData.value) as VirgilPrivateKey;
-    }
-
-    async loadPrivateKey(password: string, id?: string) {
+    async loadPrivateKey(password?: string, id?: string) {
+        const privateKey = await this.loadLocalPrivateKey();
+        if (privateKey) return privateKey;
+        if (!password) throw new Error('Private key not found, password required');
         if (!this.syncStorage) this.syncStorage = this.createSyncStorage(password, id);
         const storage = await this.syncStorage;
         const key = await storage.retrieveEntry(this.toolbox.identity).catch(e => {
@@ -81,5 +78,11 @@ export default class KeyknoxLoader {
         await storage.sync();
 
         return storage;
+    }
+
+    private async loadLocalPrivateKey() {
+        const privateKeyData = await this.localStorage.load(this.toolbox.identity);
+        if (!privateKeyData) return null;
+        return this.toolbox.virgilCrypto.importPrivateKey(privateKeyData.value) as VirgilPrivateKey;
     }
 }

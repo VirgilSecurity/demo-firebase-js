@@ -42,7 +42,7 @@ export default class VirgilToolbox {
         });
     }
 
-    async createCard(keyPair: IKeyPair = this.virgilCrypto.generateKeys()) {
+    async createCard(keyPair: IKeyPair) {
         await this.cardManager.publishCard({
             privateKey: keyPair.privateKey,
             publicKey: keyPair.publicKey,

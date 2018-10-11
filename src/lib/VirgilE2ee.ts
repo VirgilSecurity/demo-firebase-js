@@ -22,86 +22,44 @@ export default class VirgilE2ee {
         this.keyLoader = new KeyknoxLoader(this.toolbox);
     }
 
-    async bootstrap(password?: string) {
+    async bootstrap(password: string) {
         this._encryptionClient = this.initClient();
         try {
-            const client = password ?
-                await this._bootstrapWithPassword(password) :
-                await this._bootstrapWithoutPassword();
-
-            this.encryptionEmitter.emit('init', client);
+            const encryptionClient = await this._bootstrapWithPassword(password);
+            this.encryptionEmitter.emit('init', encryptionClient);
         } catch (e) {
             this.encryptionEmitter.emit('error', e);
             throw e;
         }
     }
 
-    async _bootstrapWithoutPassword() {
-        let privateKey: VirgilPrivateKey | null, publicKeys: VirgilPublicKey[];
-
-        [privateKey, publicKeys] = await this.loadKeys();
-
-        if (publicKeys.length > 1) {
-            if (privateKey) {
-                const publicKey = this.toolbox.virgilCrypto.extractPublicKey(privateKey);
-                publicKeys.push(publicKey);
-                return new EncryptionClient(privateKey, publicKeys, this.toolbox.virgilCrypto);
-            } else {
-                throw new Error('Password required');
-            }
-        } else {
-            if (privateKey) {
-                const publicKey = this.toolbox.virgilCrypto.extractPublicKey(privateKey);
-                await this.toolbox.createCard({ publicKey, privateKey });
-                return new EncryptionClient(privateKey, publicKeys, this.toolbox.virgilCrypto);
-            } else {
-                throw new Error('Password required');
-            }
-        }
-    }
-
-    async _bootstrapWithPassword(password: string): Promise<EncryptionClient> {
+   private  async _bootstrapWithPassword(password: string): Promise<EncryptionClient> {
         let privateKey: VirgilPrivateKey | null,
             publicKeys: VirgilPublicKey[],
             publicKey: VirgilPublicKey;
 
-        [privateKey, publicKeys] = await this.loadKeys();
+        privateKey = await this.keyLoader.loadPrivateKey(password);
+        publicKeys = await this.toolbox.getPublicKeys(this.identity);
 
-        if (publicKeys.length > 0) {
-            if (privateKey) {
+        if (privateKey) {
+            if (publicKeys.length > 0) {
                 return new EncryptionClient(privateKey, publicKeys, this.toolbox.virgilCrypto);
             } else {
-                privateKey = await this.keyLoader.loadPrivateKey(password);
-                if (privateKey) {
-                    publicKey = this.toolbox.virgilCrypto.extractPublicKey(privateKey);
-                    await this.toolbox.createCard({ privateKey, publicKey });
-                } else {
-                    const keyPair = await this.toolbox.createCard();
-                    publicKey = keyPair.publicKey;
-                    privateKey = keyPair.privateKey;
-                }
-                publicKeys.push(publicKey);
-                return new EncryptionClient(privateKey, publicKeys, this.toolbox.virgilCrypto);
+                publicKey = this.toolbox.virgilCrypto.extractPublicKey(privateKey);              
+                await this.toolbox.createCard({ privateKey, publicKey });
+                return new EncryptionClient(privateKey, [publicKey], this.toolbox.virgilCrypto);
             }
         } else {
-            privateKey = await this.keyLoader.loadPrivateKey(password);
-            if (privateKey) {
-                publicKey = this.toolbox.virgilCrypto.extractPublicKey(privateKey);
-                await this.toolbox.createCard({ privateKey, publicKey });
+            if (publicKeys.length > 0) {
+                throw new Error('private key not found');
             } else {
-                const keyPair = await this.toolbox.createCard();
+                const keyPair = this.toolbox.virgilCrypto.generateKeys()
                 publicKey = keyPair.publicKey;
                 privateKey = keyPair.privateKey;
+                await this.keyLoader.savePrivateKey(privateKey, password);
             }
             return new EncryptionClient(privateKey, [publicKey], this.toolbox.virgilCrypto);
         }
-    }
-
-    private async loadKeys() {
-        return await Promise.all([
-            this.keyLoader.loadLocalPrivateKey(),
-            this.toolbox.getPublicKeys(this.identity),
-        ]);
     }
 
     async encrypt(message: string, username: string) {

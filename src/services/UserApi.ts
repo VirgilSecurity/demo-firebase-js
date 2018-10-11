@@ -17,30 +17,34 @@ class UserApi {
         return (UserApi._instance = new UserApi());
     }
 
-    async signUp(username: string, password: string, brainkeyPassword?: string) {
+    async signUp(username: string, password: string, brainkeyPassword: string) {
         username = username.toLocaleLowerCase();
         let user: firebase.auth.UserCredential;
         try {
             user = await firebase
                 .auth()
                 .createUserWithEmailAndPassword(username + this.postfix, password);
+
+            this.user = user.user!;
         } catch (e) {
             throw e;
         }
+
         this.collectionRef.doc(username).set({
             createdAt: new Date(),
             channels: [],
         });
-        if (!this.virgilE2ee) this.virgilE2ee = this.createVirgilClient(user.user!);
+        if (!this.virgilE2ee) this.virgilE2ee = this.createVirgilClient(username);
         return await this.virgilE2ee.bootstrap(brainkeyPassword);
     }
 
-    async signIn(username: string, password: string, brainkeyPassword?: string) {
+    async signIn(username: string, password: string, brainkeyPassword: string) {
+        username = username.toLocaleLowerCase();
         const user = await firebase
             .auth()
             .signInWithEmailAndPassword(username + this.postfix, password)
-        
-        if (!this.virgilE2ee) this.virgilE2ee = this.createVirgilClient(user.user!);
+        this.user = user.user!;
+        if (!this.virgilE2ee) this.virgilE2ee = this.createVirgilClient(username);
         return await this.virgilE2ee.bootstrap(brainkeyPassword);
     }
 
@@ -70,9 +74,7 @@ class UserApi {
         throw new Error('Error in getJWT with code: ' + response.status);
     };
 
-    private createVirgilClient = (user: firebase.User) => {
-        if (!user) throw new Error('No user');
-        const username = user.email!.replace('@virgilfirebase.com', '').toLocaleLowerCase();
+    private createVirgilClient = (username: string) => {
         return new VirgilE2ee(username, this.getJwt);
     };
 }
