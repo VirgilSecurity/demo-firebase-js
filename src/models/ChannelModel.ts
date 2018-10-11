@@ -1,6 +1,6 @@
 import MessagesListModel, { IMessage } from './MessageListModel';
 import MessageStorage from './MessageStorage';
-import EncryptedMessageList from './EncryptedMessageList';
+import CryptoMessageList from './CryptoMessageList';
 import VirgilE2ee from '../lib/VirgilE2ee';
 
 export interface IChannel {
@@ -14,7 +14,7 @@ export default class ChannelModel implements IChannel {
     public count: number;
     public members: string[];
     private messageStorage: MessageStorage;
-    private encryptedMessageList: EncryptedMessageList;
+    private encryptedMessageList: CryptoMessageList;
 
     constructor(
         { id, count, members }: IChannel,
@@ -28,7 +28,7 @@ export default class ChannelModel implements IChannel {
 
         const messageList = new MessagesListModel(this, this.sender);
 
-        this.encryptedMessageList = new EncryptedMessageList(messageList, virgilE2ee);
+        this.encryptedMessageList = new CryptoMessageList(messageList, virgilE2ee);
     }
 
     get receiver() {
@@ -44,8 +44,8 @@ export default class ChannelModel implements IChannel {
     }
 
     listenMessages(cb: (messages: IMessage[]) => void) {
-        return this.encryptedMessageList.listenUpdates(this.id, newMessages => {
-            const allMessages = this.messageStorage.addMessages(newMessages);
+        return this.encryptedMessageList.listenUpdates(this.id, messages => {
+            const allMessages = this.messageStorage.addMessages(messages);
             cb(allMessages); 
         });
     }

@@ -15,10 +15,11 @@ export default class EncryptedMessageList {
 
     listenUpdates(id: string, cb: (messages: IMessage[]) => void) {
         return this.messageList.listenUpdates(id, async messages => {
-            const promises = messages.map(m => this.virgilE2ee.decrypt(m.body));
+            const newMessages = messages.filter(m => m.body !== '');
+            const promises = newMessages.map(m => this.virgilE2ee.decrypt(m.body));
 
             const decryptedBodies = await Promise.all(promises);
-            messages.forEach((m, i) => (m.body = decryptedBodies[i]));
+            newMessages.forEach((m, i) => { m.body = decryptedBodies[i] });
             cb(messages);
         });
     }

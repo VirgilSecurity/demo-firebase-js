@@ -31,8 +31,8 @@ export default class MessagesListModel {
                     .filter(messageSnapshot => messageSnapshot.type === 'added')
                     .map(e => this.getMessageFromSnapshot(e.doc));
 
-                const messages = await this.getNewMessages(loadedMessages);
-                cb(messages);
+                await this.blindNewMessages(loadedMessages);
+                cb(loadedMessages);
             });
     }
 
@@ -68,7 +68,7 @@ export default class MessagesListModel {
         return transaction;
     };
 
-    private async getNewMessages(loadedMessages: IMessage[]) {
+    private async blindNewMessages(loadedMessages: IMessage[]) {
         // Messages are deleted after receiver read it, so we can't encrypt them
         const newMessages = loadedMessages.filter(m => m.body !== '');
         // Here we deleting message content after receiver read it.
