@@ -48,7 +48,7 @@
     "typescript": "^3.0.1"
   },
   "scripts": {
-    "start": "parcel src/index.html --open",
+    "start": "parcel src/index.html --open --no-hmr",
     "test": "echo \"Error: no test specified\" && exit 1"
   }
 }

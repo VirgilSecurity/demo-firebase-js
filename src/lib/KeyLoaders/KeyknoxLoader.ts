@@ -4,12 +4,12 @@ import {
     CloudKeyStorage,
     KeyknoxManager,
     KeyknoxCrypto,
+    KeyEntryDoesntExistError,
 } from '@virgilsecurity/keyknox';
 import { VirgilPythiaCrypto, VirgilPublicKey } from 'virgil-crypto/dist/virgil-crypto-pythia.es';
 import VirgilToolbox from '../VirgilToolbox';
 import { VirgilPrivateKey } from 'virgil-crypto';
 import { KeyEntryStorage } from 'virgil-sdk';
-import KeyLoader from './KeyLoader';
 
 export interface IBrainKey {
     generateKeyPair(
@@ -21,33 +21,45 @@ export interface IBrainKey {
     }>;
 }
 
-export default class KeyknoxLoader extends KeyLoader {
-    pythiaCrypto = new VirgilPythiaCrypto();
-    brainKey: IBrainKey;
-    storage: Promise<SyncKeyStorage>;
+export default class KeyknoxLoader {
+    private pythiaCrypto = new VirgilPythiaCrypto();
+    private brainKey: IBrainKey;
+    private syncStorage?: Promise<SyncKeyStorage>;
+    private localStorage = new KeyEntryStorage({ name: 'demo-firebase-js-keyknox' });
 
-    constructor(public sdk: VirgilToolbox, password: string, id?: string) {
-        super(sdk);
+    constructor(public toolbox: VirgilToolbox) {
         this.brainKey = createBrainKey({
-            virgilCrypto: this.sdk.virgilCrypto,
+            virgilCrypto: this.toolbox.virgilCrypto,
             virgilPythiaCrypto: this.pythiaCrypto,
-            accessTokenProvider: this.sdk.jwtProvider,
+            accessTokenProvider: this.toolbox.jwtProvider,
         });
-
-        this.storage = this.createSyncStorage(password, id);
     }
 
-    async loadPrivateKey() {
-        const storage = await this.storage;
-        const key = await storage.retrieveEntry(this.sdk.identity);
-        return this.sdk.virgilCrypto.importPrivateKey(key.value);
+    async loadLocalPrivateKey() {
+        const privateKeyData = await this.localStorage.load(this.toolbox.identity);
+        if (!privateKeyData) return null;
+        return this.toolbox.virgilCrypto.importPrivateKey(privateKeyData.value) as VirgilPrivateKey;
     }
 
-    async savePrivateKey(privateKey: VirgilPrivateKey) {
-        const storage = await this.storage;
+    async loadPrivateKey(password: string, id?: string) {
+        if (!this.syncStorage) this.syncStorage = this.createSyncStorage(password, id);
+        const storage = await this.syncStorage;
+        const key = await storage.retrieveEntry(this.toolbox.identity).catch(e => {
+            if (e instanceof KeyEntryDoesntExistError) {
+                return null;
+            }
+            throw e;
+        });
+        if (!key) return null;
+        return this.toolbox.virgilCrypto.importPrivateKey(key.value) as VirgilPrivateKey;
+    }
+
+    async savePrivateKey(privateKey: VirgilPrivateKey, password: string, id?: string) {
+        if (!this.syncStorage) this.syncStorage = this.createSyncStorage(password, id);
+        const storage = await this.syncStorage;
         await storage.storeEntry(
-            this.sdk.identity,
-            this.sdk.virgilCrypto.exportPrivateKey(privateKey),
+            this.toolbox.identity,
+            this.toolbox.virgilCrypto.exportPrivateKey(privateKey),
         );
     }
 
@@ -56,14 +68,14 @@ export default class KeyknoxLoader extends KeyLoader {
         const storage = new SyncKeyStorage(
             new CloudKeyStorage(
                 new KeyknoxManager(
-                    this.sdk.jwtProvider,
+                    this.toolbox.jwtProvider,
                     privateKey,
                     publicKey,
                     undefined,
-                    new KeyknoxCrypto(this.sdk.virgilCrypto),
+                    new KeyknoxCrypto(this.toolbox.virgilCrypto),
                 ),
             ),
-            new KeyEntryStorage({ name: 'demo-firebase-js-keyknox' })
+            this.localStorage,
         );
 
         await storage.sync();

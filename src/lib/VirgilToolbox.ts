@@ -1,4 +1,4 @@
-import { VirgilCrypto, VirgilCardCrypto } from 'virgil-crypto/dist/virgil-crypto-pythia.es';
+import { VirgilCrypto, VirgilCardCrypto, VirgilPrivateKey } from 'virgil-crypto/dist/virgil-crypto-pythia.es';
 import { VirgilPublicKey, VirgilPrivateKeyExporter } from 'virgil-crypto';
 import {
     VirgilCardVerifier,
@@ -7,6 +7,11 @@ import {
     PrivateKeyStorage,
     KeyEntryStorage,
 } from 'virgil-sdk';
+
+export interface IKeyPair {
+    privateKey: VirgilPrivateKey;
+    publicKey: VirgilPublicKey;
+}
 
 export default class VirgilToolbox {
     static jwtEndpoint = 'https://YOUR_ENDPOINT.cloudfunctions.net/api/generate_jwt';
@@ -37,9 +42,7 @@ export default class VirgilToolbox {
         });
     }
 
-    async createCard() {
-        const keyPair = this.virgilCrypto.generateKeys();
-
+    async createCard(keyPair: IKeyPair = this.virgilCrypto.generateKeys()) {
         await this.cardManager.publishCard({
             privateKey: keyPair.privateKey,
             publicKey: keyPair.publicKey,

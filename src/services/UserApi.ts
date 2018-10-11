@@ -10,28 +10,11 @@ class UserApi {
     user: firebase.User | null = null;
     virgilE2ee?: VirgilE2ee;
 
-    private _onAuthChange: AuthHandler | null = null;
     private static _instance: UserApi | null = null;
 
     static get instance(): UserApi {
         if (UserApi._instance) return UserApi._instance;
         return (UserApi._instance = new UserApi());
-    }
-
-    constructor() {
-        firebase.auth().onAuthStateChanged(async user => {
-            this.user = user;
-            if (user) {
-                this.virgilE2ee = this.createVirgilClient(user);
-                if (this._onAuthChange) this._onAuthChange(this.virgilE2ee);
-            } else {
-                if (this._onAuthChange) this._onAuthChange(null);
-            }
-        });
-    }
-
-    subscribeOnAuthChange(cb: AuthHandler | null) {
-        this._onAuthChange = cb;
     }
 
     async signUp(username: string, password: string, brainkeyPassword?: string) {
@@ -48,16 +31,16 @@ class UserApi {
             createdAt: new Date(),
             channels: [],
         });
-        if (!this.virgilE2ee) throw new Error('virgil e2ee not initialized');
+        if (!this.virgilE2ee) this.virgilE2ee = this.createVirgilClient(user.user!);
         return await this.virgilE2ee.bootstrap(brainkeyPassword);
     }
 
     async signIn(username: string, password: string, brainkeyPassword?: string) {
-        await firebase
+        const user = await firebase
             .auth()
             .signInWithEmailAndPassword(username + this.postfix, password)
         
-        if (!this.virgilE2ee) throw new Error('virgil e2ee not initialized');
+        if (!this.virgilE2ee) this.virgilE2ee = this.createVirgilClient(user.user!);
         return await this.virgilE2ee.bootstrap(brainkeyPassword);
     }
 
