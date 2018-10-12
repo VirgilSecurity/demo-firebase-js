@@ -111,10 +111,14 @@ export default class ChatPage extends React.Component<IChatPageProps, IAppState>
                         </BottomPrimaryButton>
                     </SideBar>
                     <ChatWorkspace>
-                        <React.Fragment>
-                            <Messages messages={this.state.messages} />
-                            <MessageField handleSend={this.model.sendMessage} />
-                        </React.Fragment>
+                        {this.state.currentChannel ? (
+                            <React.Fragment>
+                                <Messages messages={this.state.messages} />
+                                <MessageField handleSend={this.model.sendMessage} />
+                            </React.Fragment>
+                        ) : (
+                            'Select Channel First'
+                        )}
                     </ChatWorkspace>
                 </ChatLayout>
             </ChatContainer>

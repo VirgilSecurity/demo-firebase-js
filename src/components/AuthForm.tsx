@@ -10,13 +10,21 @@ const Buttons = styled.div`
     justify-content: space-between;
 `;
 
+const LoadingContainer = styled.div`
+    width: 100%;
+    text-align: center;
+`
+
 export interface IAuthFormValues {
     username: string;
     password: string;
     brainkeyPassword: string;
 }
 
-type formikSubmit = (values: IAuthFormValues, actions: FormikActions<IAuthFormValues>) => void;
+type formikSubmit = (
+    values: IAuthFormValues,
+    actions: FormikActions<IAuthFormValues>,
+) => Promise<void>;
 
 export interface IAuthFormProps {
     onSignIn: formikSubmit;
@@ -26,10 +34,11 @@ export interface IAuthFormProps {
 export interface IAuthFormState {
     isSingInClicked: boolean;
     isMultiDeviceSupportEnabled: boolean;
+    isLoading: boolean;
 }
 
 export default class AuthForm extends React.Component<IAuthFormProps, IAuthFormState> {
-    state = { isSingInClicked: false, isMultiDeviceSupportEnabled: false };
+    state = { isSingInClicked: false, isMultiDeviceSupportEnabled: false, isLoading: false };
 
     validateForm = (values: IAuthFormValues) => {
         let errors: FormikErrors<IAuthFormValues> = {};
@@ -46,7 +55,7 @@ export default class AuthForm extends React.Component<IAuthFormProps, IAuthFormS
         }
 
         if (values.brainkeyPassword === values.password) {
-            errors.brainkeyPassword = 'password and private key passwords must be different'
+            errors.brainkeyPassword = 'password and private key passwords must be different';
         }
 
         return errors;
@@ -74,11 +83,17 @@ export default class AuthForm extends React.Component<IAuthFormProps, IAuthFormS
     };
 
     onSubmit: formikSubmit = (values, actions) => {
+        this.setState({ isLoading: true });
+        let promise;
         if (this.state.isSingInClicked) {
-            this.props.onSignIn(values, actions);
+            promise = this.props.onSignIn(values, actions);
         } else {
-            this.props.onSignUp(values, actions);
+            promise = this.props.onSignUp(values, actions);
         }
+
+        return promise
+            .then(() => this.setState({ isLoading: false }))
+            .catch(() => this.setState({ isLoading: false }));
     };
 
     renderForm = ({ isValid }: FormikProps<IAuthFormValues>) => {
@@ -87,22 +102,7 @@ export default class AuthForm extends React.Component<IAuthFormProps, IAuthFormS
                 <Field name="username" render={this.renderEmailInput} />
                 <Field name="password" render={this.renderPasswordInput} />
                 <Field name="brainkeyPassword" render={this.renderBrainKeyPasswordInput} />
-                <Buttons>
-                    <PrimaryButton
-                        disabled={!isValid}
-                        type="submit"
-                        onClick={() => this.setState({ isSingInClicked: true })}
-                    >
-                        Sign In
-                    </PrimaryButton>
-                    <PrimaryButton
-                        disabled={!isValid}
-                        type="submit"
-                        onClick={() => this.setState({ isSingInClicked: false })}
-                    >
-                        Sign Up
-                    </PrimaryButton>
-                </Buttons>
+                {this.state.isLoading ? this.renderLoading() : this.renderButtons(isValid)}
             </Form>
         );
     };
@@ -112,9 +112,34 @@ export default class AuthForm extends React.Component<IAuthFormProps, IAuthFormS
             <Formik
                 validate={this.validateForm}
                 initialValues={{ username: '', password: '', brainkeyPassword: '' }}
-                onSubmit={this.state.isSingInClicked ? this.props.onSignIn : this.props.onSignUp}
+                onSubmit={this.onSubmit}
                 render={this.renderForm}
             />
         );
+    }
+
+    private renderButtons = (isValid: boolean) => {
+        return (
+            <Buttons>
+                <PrimaryButton
+                    disabled={!isValid}
+                    type="submit"
+                    onClick={() => this.setState({ isSingInClicked: true })}
+                >
+                    Sign In
+                </PrimaryButton>
+                <PrimaryButton
+                    disabled={!isValid}
+                    type="submit"
+                    onClick={() => this.setState({ isSingInClicked: false })}
+                >
+                    Sign Up
+                </PrimaryButton>
+            </Buttons>
+        );
+    };
+
+    private renderLoading = () => {
+        return <LoadingContainer>loading</LoadingContainer>
     }
 }
