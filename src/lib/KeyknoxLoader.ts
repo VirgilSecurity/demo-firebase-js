@@ -7,7 +7,7 @@ import {
     KeyEntryDoesntExistError,
 } from '@virgilsecurity/keyknox';
 import { VirgilPythiaCrypto, VirgilPublicKey } from 'virgil-crypto/dist/virgil-crypto-pythia.es';
-import VirgilToolbox from '../VirgilToolbox';
+import VirgilToolbox from './VirgilToolbox';
 import { VirgilPrivateKey } from 'virgil-crypto';
 import { KeyEntryStorage } from 'virgil-sdk';
 

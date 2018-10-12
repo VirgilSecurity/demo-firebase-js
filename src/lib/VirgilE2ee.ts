@@ -1,5 +1,5 @@
 import { VirgilPublicKey, VirgilPrivateKey } from 'virgil-crypto';
-import { KeyknoxLoader } from './KeyLoaders';
+import KeyknoxLoader from './KeyknoxLoader';
 import { EncryptionClient } from './VirgilClient';
 import VirgilToolbox from './virgilToolbox';
 import EventEmitter from 'wolfy87-eventemitter';
