@@ -27,7 +27,7 @@ export default class KeyknoxLoader {
     private syncStorage?: Promise<SyncKeyStorage>;
     private localStorage = new KeyEntryStorage({ name: 'demo-firebase-js-keyknox' });
 
-    constructor(public toolbox: VirgilToolbox) {
+    constructor(private identity: string, public toolbox: VirgilToolbox) {
         this.brainKey = createBrainKey({
             virgilCrypto: this.toolbox.virgilCrypto,
             virgilPythiaCrypto: this.pythiaCrypto,
@@ -41,7 +41,7 @@ export default class KeyknoxLoader {
         if (!password) throw new Error('Private key not found, password required');
         if (!this.syncStorage) this.syncStorage = this.createSyncStorage(password, id);
         const storage = await this.syncStorage;
-        const key = await storage.retrieveEntry(this.toolbox.identity).catch(e => {
+        const key = await storage.retrieveEntry(this.identity).catch(e => {
             if (e instanceof KeyEntryDoesntExistError) {
                 return null;
             }
@@ -55,7 +55,7 @@ export default class KeyknoxLoader {
         if (!this.syncStorage) this.syncStorage = this.createSyncStorage(password, id);
         const storage = await this.syncStorage;
         await storage.storeEntry(
-            this.toolbox.identity,
+            this.identity,
             this.toolbox.virgilCrypto.exportPrivateKey(privateKey),
         );
     }
@@ -81,7 +81,7 @@ export default class KeyknoxLoader {
     }
 
     private async loadLocalPrivateKey() {
-        const privateKeyData = await this.localStorage.load(this.toolbox.identity);
+        const privateKeyData = await this.localStorage.load(this.identity);
         if (!privateKeyData) return null;
         return this.toolbox.virgilCrypto.importPrivateKey(privateKeyData.value) as VirgilPrivateKey;
     }

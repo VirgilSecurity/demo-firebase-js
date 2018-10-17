@@ -6,11 +6,8 @@ import VirgilE2ee from '../lib/VirgilE2ee';
 export default class ChannelListModel {
     static collectionRef = firebase.firestore().collection(FirebaseCollections.Channels);
     channels: ChannelModel[] = [];
-    username: string;
 
-    constructor(public virgilE2ee: VirgilE2ee) {
-        this.username = virgilE2ee.identity;
-    }
+    constructor(private username: string, private virgilE2ee: VirgilE2ee) {}
 
     getChannel(channelId: string) {
         const channel = this.channels.find(e => e.id === channelId);

@@ -4,48 +4,90 @@ import { EncryptionClient } from './VirgilClient';
 import VirgilToolbox from './virgilToolbox';
 import EventEmitter from 'wolfy87-eventemitter';
 import { VirgilReceiver } from './VirgilReciever';
+import { Jwt } from 'virgil-sdk';
+
+export class AsyncProperty<T> extends EventEmitter {
+    private promise: Promise<T>;
+    private isInitialized: boolean = false;
+
+    constructor(private message?: string) {
+        super();
+        this.promise = this.initPromise();
+    }
+
+    init = (instance: T) => {
+        if (this.isInitialized) this.promise = this.initPromise();
+        this.isInitialized = true;
+        this.emit('init', instance);
+    };
+
+    fail = (e: Error | string) => {
+        this.emit('error', e);
+        return e;
+    };
+
+    get = (): Promise<T> => {
+        if (!this.isInitialized && this.message) throw this.message;
+        return this.promise;
+    };
+
+    fromPromise = (promise: Promise<T>) => {
+        this.isInitialized = true;
+        this.promise = promise;
+    };
+
+    private initPromise(): Promise<T> {
+        return new Promise((resolve, reject) => {
+            this.once('init', resolve);
+            this.once('error', reject);
+        });
+    }
+}
 
 export default class VirgilE2ee {
-    toolbox: VirgilToolbox;
-    keyLoader: KeyknoxLoader;
-    private _encryptionClient?: Promise<EncryptionClient>;
+    private identity?: Promise<string>;
+    private toolbox = new VirgilToolbox(this.getToken);
+    private keyLoader?: Promise<KeyknoxLoader>;
+    private encryptor = new AsyncProperty<EncryptionClient>('bootstrap first');
     private _receiverStore: VirgilReceiver[] = [];
-    private encryptionEmitter = new EventEmitter();
 
-    get encryptionClient() {
-        if (!this._encryptionClient) throw new Error('sign in or sign up first');
-        return this._encryptionClient;
+    constructor(public getToken: () => Promise<string>) {}
+
+    async init() {
+        this.identity = this.getToken().then(token => Jwt.fromString(token).identity());
+        this.keyLoader = this.identity.then(identity => {
+            return new KeyknoxLoader(identity, this.toolbox)
+        })
+        return this.identity;
     }
 
-    constructor(public identity: string, public getToken: (identity: string) => Promise<string>) {
-        this.toolbox = new VirgilToolbox(identity, getToken);
-        this.keyLoader = new KeyknoxLoader(this.toolbox);
+    bootstrap(password: string) {
+        this._bootstrapWithPassword(password)
+            .then(this.encryptor.init)
+            .catch(this.encryptor.fail);
+
+        return this;
     }
 
-    async bootstrap(password: string) {
-        this._encryptionClient = this.initClient();
-        try {
-            const encryptionClient = await this._bootstrapWithPassword(password);
-            this.encryptionEmitter.emit('init', encryptionClient);
-        } catch (e) {
-            this.encryptionEmitter.emit('error', e);
-            throw e;
-        }
-    }
+    private async _bootstrapWithPassword(password: string): Promise<EncryptionClient> {
+        if (!this.identity || !this.keyLoader) throw new Error('init first');
+        const [keyLoader, identity] = await Promise.all([
+            this.keyLoader,
+            this.identity,
+        ]);
 
-   private  async _bootstrapWithPassword(password: string): Promise<EncryptionClient> {
-        let privateKey: VirgilPrivateKey | null,
-            publicKeys: VirgilPublicKey[],
-            publicKey: VirgilPublicKey;
+        let [privateKey, publicKeys] = await Promise.all([
+            keyLoader.loadPrivateKey(password),
+            this.toolbox.getPublicKeys(identity),
+        ]);
 
-        privateKey = await this.keyLoader.loadPrivateKey(password);
-        publicKeys = await this.toolbox.getPublicKeys(this.identity);
+        let publicKey: VirgilPublicKey;
 
         if (privateKey) {
             if (publicKeys.length > 0) {
                 return new EncryptionClient(privateKey, publicKeys, this.toolbox.virgilCrypto);
             } else {
-                publicKey = this.toolbox.virgilCrypto.extractPublicKey(privateKey);              
+                publicKey = this.toolbox.virgilCrypto.extractPublicKey(privateKey);
                 await this.toolbox.createCard({ privateKey, publicKey });
                 return new EncryptionClient(privateKey, [publicKey], this.toolbox.virgilCrypto);
             }
@@ -53,23 +95,23 @@ export default class VirgilE2ee {
             if (publicKeys.length > 0) {
                 throw new Error('private key not found');
             } else {
-                const keyPair = this.toolbox.virgilCrypto.generateKeys()
+                const keyPair = this.toolbox.virgilCrypto.generateKeys();
                 publicKey = keyPair.publicKey;
                 privateKey = keyPair.privateKey;
-                await this.keyLoader.savePrivateKey(privateKey, password);
+                await keyLoader.savePrivateKey(privateKey, password);
             }
             return new EncryptionClient(privateKey, [publicKey], this.toolbox.virgilCrypto);
         }
     }
 
     async encrypt(message: string, username: string) {
-        const client = await this.encryptionClient;
-        const receiver = this.getReceiver(username);
+        const client = await this.encryptor.get();
+        const receiver = await this.getReceiver(username);
         return client.encrypt(message, await receiver.publicKeys);
     }
 
     async decrypt(message: string) {
-        const client = await this.encryptionClient;
+        const client = await this.encryptor.get();
         return client.decrypt(message);
     }
 
@@ -82,14 +124,8 @@ export default class VirgilE2ee {
         return receiver;
     }
 
-    getPublicKeys(username: string) {
-        return this.toolbox.getPublicKeys(username);
+    async getPublicKeys(username: string) {
+        const toolbox = await this.toolbox.get();
+        return toolbox.getPublicKeys(username);
     }
-
-    private initClient = () => {
-        return new Promise((resolve, reject) => {
-            this.encryptionEmitter.once('init', resolve);
-            this.encryptionEmitter.once('error', reject);
-        }) as Promise<EncryptionClient>;
-    };
 }

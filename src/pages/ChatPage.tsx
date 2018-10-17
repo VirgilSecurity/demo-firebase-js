@@ -17,7 +17,8 @@ class ChatPage extends React.Component<IChatPageProps> {
 
     render() {
         if (!UserApi.instance.virgilE2ee) return <Redirect to={Routes.auth} />
-        const chatModel = new ChatModel(UserApi.instance.virgilE2ee)
+        if (!UserApi.instance.username) throw new Error('no user');
+        const chatModel = new ChatModel(UserApi.instance.username, UserApi.instance.virgilE2ee)
         return <ChatWindow signOut={this.signOut} model={chatModel} />;
     }
 }

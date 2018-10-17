@@ -9,6 +9,7 @@ class UserApi {
     collectionRef = firebase.firestore().collection(FirebaseCollections.Users);
     user: firebase.User | null = null;
     virgilE2ee?: VirgilE2ee;
+    username?: string 
 
     private static _instance: UserApi | null = null;
 
@@ -17,38 +18,7 @@ class UserApi {
         return (UserApi._instance = new UserApi());
     }
 
-    async signUp(username: string, password: string, brainkeyPassword: string) {
-        username = username.toLocaleLowerCase();
-        let user: firebase.auth.UserCredential;
-        try {
-            user = await firebase
-                .auth()
-                .createUserWithEmailAndPassword(username + this.postfix, password);
-
-            this.user = user.user!;
-        } catch (e) {
-            throw e;
-        }
-
-        this.collectionRef.doc(username).set({
-            createdAt: new Date(),
-            channels: [],
-        });
-        if (!this.virgilE2ee) this.virgilE2ee = this.createVirgilClient(username);
-        return await this.virgilE2ee.bootstrap(brainkeyPassword);
-    }
-
-    async signIn(username: string, password: string, brainkeyPassword: string) {
-        username = username.toLocaleLowerCase();
-        const user = await firebase
-            .auth()
-            .signInWithEmailAndPassword(username + this.postfix, password)
-        this.user = user.user!;
-        if (!this.virgilE2ee) this.virgilE2ee = this.createVirgilClient(username);
-        return await this.virgilE2ee.bootstrap(brainkeyPassword);
-    }
-
-    getJwt = async (identity: string) => {
+    getJwt = async () => {
         if (!this.user) throw new Error('user must be logged');
         const token = await this.user.getIdToken();
         let response;
@@ -60,8 +30,7 @@ class UserApi {
                         'Content-Type': 'application/json',
                         Authorization: `Bearer ${token}`,
                     }),
-                    method: 'POST',
-                    body: JSON.stringify({ identity }),
+                    method: 'POST'
                 },
             );
         } catch (e) {
@@ -74,9 +43,39 @@ class UserApi {
         throw new Error('Error in getJWT with code: ' + response.status);
     };
 
-    private createVirgilClient = (username: string) => {
-        return new VirgilE2ee(username, this.getJwt);
-    };
+    async signUp(username: string, password: string, brainkeyPassword: string) {
+        username = username.toLocaleLowerCase();
+        let user: firebase.auth.UserCredential;
+        try {
+            user = await firebase
+                .auth()
+                .createUserWithEmailAndPassword(username + this.postfix, password);
+
+            this.user = user.user!;
+            this.username = username;
+        } catch (e) {
+            throw e;
+        }
+
+        this.collectionRef.doc(username).set({
+            createdAt: new Date(),
+            channels: [],
+        });
+        if (!this.virgilE2ee) this.virgilE2ee = new VirgilE2ee(this.getJwt);
+        return this.virgilE2ee.init().then(_identity => this.virgilE2ee!.bootstrap(brainkeyPassword));
+    }
+
+    async signIn(username: string, password: string, brainkeyPassword: string) {
+        username = username.toLocaleLowerCase();
+        const user = await firebase
+            .auth()
+            .signInWithEmailAndPassword(username + this.postfix, password)
+        this.user = user.user!;
+        this.username = username;
+        if (!this.virgilE2ee) this.virgilE2ee = new VirgilE2ee(this.getJwt);
+        return this.virgilE2ee.init().then(_identity => this.virgilE2ee!.bootstrap(brainkeyPassword));
+    }
+
 }
 
 export default UserApi;

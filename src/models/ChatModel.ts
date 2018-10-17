@@ -6,14 +6,15 @@ import VirgilE2ee from '../lib/VirgilE2ee';
 
 export class ChatModel {
     state = new AppState();
-    channelsList = new ChannelListModel(this.virgilE2ee);
+    channelsList: ChannelListModel;
 
     channelsListener?: firebase.Unsubscribe;
     messageListener?: firebase.Unsubscribe;
-
-    constructor(public virgilE2ee: VirgilE2ee) {
-        this.listenChannels(this.virgilE2ee.identity);
-        this.state.setState({ username: this.virgilE2ee.identity });
+    
+    constructor(identity: string, virgilE2ee: VirgilE2ee) {
+        this.state.setState({ username: identity });
+        this.channelsList = new ChannelListModel(identity, virgilE2ee);
+        this.listenChannels(identity);
     }
 
     sendMessage = async (message: string) => {

@@ -38,26 +38,21 @@ class AuthPage extends React.Component<RouteComponentProps<IAuthPageProps>, IAut
     };
 
     handleSignUp = async (values: IAuthFormValues, actions: FormikActions<IAuthFormValues>) => {
-        let promise;
         try {
-            promise = await UserApi.instance.signUp(values.username, values.password, values.brainkeyPassword);
+            await UserApi.instance.signUp(values.username, values.password, values.brainkeyPassword);
             this.props.history.push(Routes.index);
         } catch (e) {
             actions.setErrors({ username: e.message });
         }
-        return promise;
     };
 
     handleSignIn = async (values: IAuthFormValues, actions: FormikActions<IAuthFormValues>) => {
-        let promise;
         try {
-            promise = await UserApi.instance.signIn(values.username, values.password, values.brainkeyPassword);
+            await UserApi.instance.signIn(values.username, values.password, values.brainkeyPassword);
             this.props.history.push(Routes.index);
         } catch (e) {
             actions.setErrors({ username: e.message });
         }
-
-        return promise;
     };
     
     render() {
