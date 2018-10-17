@@ -15,8 +15,7 @@ export interface IKeyPair {
 
 export default class VirgilToolbox {
     static jwtEndpoint = 'https://YOUR_ENDPOINT.cloudfunctions.net/api/generate_jwt';
-
-    identity: string;
+    
     virgilCrypto = new VirgilCrypto();
     keyEntryStorage = new KeyEntryStorage({ name: 'demo-firebase-js' });
     keyStorage = new PrivateKeyStorage(
@@ -28,11 +27,9 @@ export default class VirgilToolbox {
     cardManager: CardManager;
     jwtProvider: CachingJwtProvider;
 
-    constructor(identity: string, public getToken: (identity: string) => Promise<string>) {
-        this.identity = identity;
+    constructor(public getToken: () => Promise<string>) {
 
-        const getJwt = () => this.getToken(identity);
-        this.jwtProvider = new CachingJwtProvider(getJwt);
+        this.jwtProvider = new CachingJwtProvider(getToken);
 
         this.cardManager = new CardManager({
             cardCrypto: this.cardCrypto,
