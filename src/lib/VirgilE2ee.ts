@@ -124,8 +124,7 @@ export default class VirgilE2ee {
         return receiver;
     }
 
-    async getPublicKeys(username: string) {
-        const toolbox = await this.toolbox.get();
-        return toolbox.getPublicKeys(username);
+    getPublicKeys(username: string) {
+        return this.toolbox.getPublicKeys(username);
     }
 }

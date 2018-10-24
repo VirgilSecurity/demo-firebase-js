@@ -13,6 +13,7 @@ class ChatPage extends React.Component<IChatPageProps> {
     signOut = () => {
         this.props.history.push(Routes.auth);
         firebase.auth().signOut();
+        UserApi.instance.virgilE2ee!.cleanup();
     };
 
     render() {

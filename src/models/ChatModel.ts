@@ -2,7 +2,7 @@ import AppState from './AppState';
 import firebase from 'firebase';
 import ChannelListModel from './ChannelListModel';
 import { IChannel } from './ChannelModel';
-import VirgilE2ee from '../lib/VirgilE2ee';
+import { EThree } from '@virgilsecurity/e3kit';
 
 export class ChatModel {
     state = new AppState();
@@ -11,7 +11,7 @@ export class ChatModel {
     channelsListener?: firebase.Unsubscribe;
     messageListener?: firebase.Unsubscribe;
     
-    constructor(identity: string, virgilE2ee: VirgilE2ee) {
+    constructor(identity: string, virgilE2ee: EThree) {
         this.state.setState({ username: identity });
         this.channelsList = new ChannelListModel(identity, virgilE2ee);
         this.listenChannels(identity);

@@ -1,14 +1,14 @@
 import firebase from 'firebase';
 import { FirebaseCollections } from './FirebaseCollections';
-import VirgilE2ee from '../lib/VirgilE2ee';
+import { EThree } from '@virgilsecurity/e3kit';
 
-export type AuthHandler = (client: VirgilE2ee | null) => void;
+export type AuthHandler = (client: EThree | null) => void;
 
 class UserApi {
     postfix = '@virgilfirebase.com';
     collectionRef = firebase.firestore().collection(FirebaseCollections.Users);
     user: firebase.User | null = null;
-    virgilE2ee?: VirgilE2ee;
+    virgilE2ee?: EThree;
     username?: string 
 
     private static _instance: UserApi | null = null;
@@ -20,7 +20,7 @@ class UserApi {
 
     getJwt = async () => {
         if (!this.user) throw new Error('user must be logged');
-        const token = await this.user.getIdToken();
+        const token = await firebase.auth().currentUser!.getIdToken();
         let response;
         try {
             response = await fetch(
@@ -61,8 +61,8 @@ class UserApi {
             createdAt: new Date(),
             channels: [],
         });
-        if (!this.virgilE2ee) this.virgilE2ee = new VirgilE2ee(this.getJwt);
-        return this.virgilE2ee.init().then(_identity => this.virgilE2ee!.bootstrap(brainkeyPassword));
+        if (!this.virgilE2ee) this.virgilE2ee = await EThree.init(this.getJwt);
+        return this.virgilE2ee.bootstrap(brainkeyPassword);
     }
 
     async signIn(username: string, password: string, brainkeyPassword: string) {
@@ -72,8 +72,8 @@ class UserApi {
             .signInWithEmailAndPassword(username + this.postfix, password)
         this.user = user.user!;
         this.username = username;
-        if (!this.virgilE2ee) this.virgilE2ee = new VirgilE2ee(this.getJwt);
-        return this.virgilE2ee.init().then(_identity => this.virgilE2ee!.bootstrap(brainkeyPassword));
+        if (!this.virgilE2ee) this.virgilE2ee = await EThree.init(this.getJwt);
+        return this.virgilE2ee.bootstrap(brainkeyPassword);
     }
 
 }

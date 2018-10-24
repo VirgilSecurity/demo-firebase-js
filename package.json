@@ -10,6 +10,7 @@
   },
   "main": "index.js",
   "dependencies": {
+    "@virgilsecurity/e3kit": "^0.1.0",
     "@virgilsecurity/keyknox": "^0.1.2",
     "date-fns": "^1.29.0",
     "firebase": "^5.3.1",

@@ -1,13 +1,13 @@
 import { FirebaseCollections } from '../services/FirebaseCollections';
 import firebase from 'firebase';
 import ChannelModel, { IChannel } from './ChannelModel';
-import VirgilE2ee from '../lib/VirgilE2ee';
+import { EThree } from '@virgilsecurity/e3kit';
 
 export default class ChannelListModel {
     static collectionRef = firebase.firestore().collection(FirebaseCollections.Channels);
     channels: ChannelModel[] = [];
 
-    constructor(private username: string, private virgilE2ee: VirgilE2ee) {}
+    constructor(private username: string, private virgilE2ee: EThree) {}
 
     getChannel(channelId: string) {
         const channel = this.channels.find(e => e.id === channelId);

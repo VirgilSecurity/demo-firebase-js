@@ -2,6 +2,7 @@ import MessagesListModel, { IMessage } from './MessageListModel';
 import MessageStorage from './MessageStorage';
 import CryptoMessageList from './CryptoMessageList';
 import VirgilE2ee from '../lib/VirgilE2ee';
+import { EThree } from '@virgilsecurity/e3kit';
 
 export interface IChannel {
     id: string;
@@ -19,7 +20,7 @@ export default class ChannelModel implements IChannel {
     constructor(
         { id, count, members }: IChannel,
         public sender: string,
-        public virgilE2ee: VirgilE2ee,
+        public virgilE2ee: EThree,
     ) {
         this.id = id;
         this.count = count;
