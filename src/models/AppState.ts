@@ -1,8 +1,10 @@
-import EventEmitter from "wolfy87-eventemitter";
-import { IChannel } from "./ChannelModel";
-import { IMessage } from "./MessageListModel";
+import { IChannel } from './ChannelModel';
+import { IMessage } from './MessageListModel';
+import { Routes } from '../services/Routes';
+import ChatModel from './ChatModel';
 
-export interface IAppState {
+export interface IAppStore {
+    chatModel: null | ChatModel;
     error: null | Error | string;
     username: string | null;
     channels: IChannel[];
@@ -10,18 +12,22 @@ export interface IAppState {
     currentChannel: IChannel | null;
 }
 
-export default class AppState extends EventEmitter {
-
-    store: IAppState = {
+export default class AppStore {
+    defaultState: IAppStore = {
         error: null,
         username: null,
         currentChannel: null,
         channels: [],
         messages: [],
+        chatModel: null,
+    };
+
+    get state() {
+        return this.stateLink();
     }
 
-    setState(state: Partial<IAppState>) {
-        const newState = Object.assign(this.store, state);
-        this.emit('change', newState);
+    // tslint:disable-next-line:no-any
+    constructor(public setState: any, private stateLink: () => IAppStore) {
+
     }
 }

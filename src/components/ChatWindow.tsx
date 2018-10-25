@@ -6,7 +6,7 @@ import MessageField from '../components/MessageField';
 import { PrimaryButton, LinkButton } from '../components/Primitives';
 import ChatModel from '../models/ChatModel';
 import { IChannel } from '../models/ChannelModel';
-import { IAppState } from '../models/AppState';
+import { IAppStore } from '../models/AppState';
 
 const ChatContainer = styled.div`
     max-width: 1024px;
@@ -57,16 +57,12 @@ const RightSide = styled.span`
 
 export interface IChatPageProps {
     model: ChatModel;
+    store: IAppStore;
     signOut: () => void;
 }
 
-export default class ChatPage extends React.Component<IChatPageProps, IAppState> {
+export default class ChatPage extends React.Component<IChatPageProps> {
     model = this.props.model;
-    state = this.model.state.store;
-
-    componentDidMount() {
-        this.model.state.on('change', this.setState.bind(this));
-    }
 
     componentWillUnmount() {
         this.model.unsubscribe();
@@ -85,7 +81,7 @@ export default class ChatPage extends React.Component<IChatPageProps, IAppState>
     selectChannel = (channelInfo: IChannel) => this.model.listenMessages(channelInfo);
 
     render() {
-        if (this.state.error) alert(this.state.error);
+        if (this.props.store.error) alert(this.props.store.error);
         return (
             <ChatContainer>
                 <Header>
@@ -93,7 +89,7 @@ export default class ChatPage extends React.Component<IChatPageProps, IAppState>
                         Virgilgram
                     </LinkButton>
                     <RightSide>
-                        {this.state.username}
+                        {this.props.store.username}
                         <LinkButton color="white" onClick={this.props.signOut}>
                             logout
                         </LinkButton>
@@ -103,17 +99,17 @@ export default class ChatPage extends React.Component<IChatPageProps, IAppState>
                     <SideBar>
                         <Channels
                             onClick={this.selectChannel}
-                            username={this.state.username!}
-                            channels={this.state.channels}
+                            username={this.props.store.username!}
+                            channels={this.props.store.channels}
                         />
                         <BottomPrimaryButton onClick={this.createChannel}>
                             New Channel
                         </BottomPrimaryButton>
                     </SideBar>
                     <ChatWorkspace>
-                        {this.state.currentChannel ? (
+                        {this.props.store.currentChannel ? (
                             <React.Fragment>
-                                <Messages messages={this.state.messages} />
+                                <Messages messages={this.props.store.messages} />
                                 <MessageField handleSend={this.model.sendMessage} />
                             </React.Fragment>
                         ) : (

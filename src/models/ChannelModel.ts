@@ -1,7 +1,6 @@
 import MessagesListModel, { IMessage } from './MessageListModel';
 import MessageStorage from './MessageStorage';
 import CryptoMessageList from './CryptoMessageList';
-import VirgilE2ee from '../lib/VirgilE2ee';
 import { EThree } from '@virgilsecurity/e3kit';
 
 export interface IChannel {

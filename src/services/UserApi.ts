@@ -1,41 +1,48 @@
 import firebase from 'firebase';
 import { FirebaseCollections } from './FirebaseCollections';
 import { EThree } from '@virgilsecurity/e3kit';
+import AppStore from '../models/AppState';
+import ChatModel from '../models/ChatModel';
 
 export type AuthHandler = (client: EThree | null) => void;
 
 class UserApi {
     postfix = '@virgilfirebase.com';
     collectionRef = firebase.firestore().collection(FirebaseCollections.Users);
-    user: firebase.User | null = null;
-    virgilE2ee?: EThree;
-    username?: string 
+    eThree: Promise<EThree>;
 
-    private static _instance: UserApi | null = null;
+    constructor(public state: AppStore) {
+        this.eThree = new Promise((resolve, reject) => {
+            return firebase.auth().onAuthStateChanged(user => {
+                if (user) {
+                    const eThreePromise = EThree.init(this.getJwt(user));
+                    
+                    eThreePromise
+                        .then(resolve)
+                        .catch(reject)
 
-    static get instance(): UserApi {
-        if (UserApi._instance) return UserApi._instance;
-        return (UserApi._instance = new UserApi());
+                    eThreePromise.then((eThree) => {
+                        this.createChatModel(user.email!.replace('@virgilfirebase.com', ''), eThree);
+                    });
+                } else {
+                    this.state.setState(state.defaultState);
+                }
+            })
+        });
     }
 
-    getJwt = async () => {
-        if (!this.user) throw new Error('user must be logged');
-        const token = await firebase.auth().currentUser!.getIdToken();
-        let response;
-        try {
-            response = await fetch(
-                'https:///us-central1-js-chat-ff5ca.cloudfunctions.net/api/generate_jwt',
-                {
-                    headers: new Headers({
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`,
-                    }),
-                    method: 'POST'
-                },
-            );
-        } catch (e) {
-            throw new Error(e);
-        }
+    getJwt = (user: firebase.User) => async () => {
+        const token = await user.getIdToken()
+        let response = await fetch(
+            'https:///us-central1-js-chat-ff5ca.cloudfunctions.net/api/generate_jwt',
+            {
+                headers: new Headers({
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                }),
+                method: 'POST',
+            },
+        );
         if (response.ok) {
             const data = (await response.json()) as { token: string };
             return data.token;
@@ -45,14 +52,13 @@ class UserApi {
 
     async signUp(username: string, password: string, brainkeyPassword: string) {
         username = username.toLocaleLowerCase();
-        let user: firebase.auth.UserCredential;
-        try {
-            user = await firebase
-                .auth()
-                .createUserWithEmailAndPassword(username + this.postfix, password);
 
-            this.user = user.user!;
-            this.username = username;
+        try {
+            await firebase
+                .auth()
+                .createUserWithEmailAndPassword(username + this.postfix, password)
+
+            this.state.setState({ username: username })
         } catch (e) {
             throw e;
         }
@@ -61,21 +67,24 @@ class UserApi {
             createdAt: new Date(),
             channels: [],
         });
-        if (!this.virgilE2ee) this.virgilE2ee = await EThree.init(this.getJwt);
-        return this.virgilE2ee.bootstrap(brainkeyPassword);
+        const eThree = await this.eThree;
+        await eThree.bootstrap(brainkeyPassword);
     }
 
     async signIn(username: string, password: string, brainkeyPassword: string) {
         username = username.toLocaleLowerCase();
-        const user = await firebase
-            .auth()
-            .signInWithEmailAndPassword(username + this.postfix, password)
-        this.user = user.user!;
-        this.username = username;
-        if (!this.virgilE2ee) this.virgilE2ee = await EThree.init(this.getJwt);
-        return this.virgilE2ee.bootstrap(brainkeyPassword);
+        await firebase.auth().signInWithEmailAndPassword(username + this.postfix, password);
+
+        this.state.setState({ username: username });
+
+        const eThree = await this.eThree;
+        await eThree.bootstrap(brainkeyPassword);
     }
 
+    async createChatModel(username: string, eThree: EThree) {
+        const chatModel = new ChatModel(this.state, username, eThree);
+        this.state.setState({ chatModel });
+    }
 }
 
 export default UserApi;

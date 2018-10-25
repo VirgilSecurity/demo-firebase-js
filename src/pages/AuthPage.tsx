@@ -1,10 +1,9 @@
 import * as React from 'react';
 import styled from 'styled-components';
 import AuthForm, { IAuthFormValues } from '../components/AuthForm';
-import { withRouter, RouteComponentProps } from 'react-router';
-import { Routes } from '../services/Routes';
 import { FormikActions } from 'formik';
 import UserApi from '../services/UserApi';
+import { IAppStore } from '../models/AppState';
 
 const Background = styled.div`
     display: flex;
@@ -24,32 +23,26 @@ const CenterCard = styled.div`
     flex-direction: column;
 `;
 
-export interface IAuthPageProps {}
-
-export interface IAuthPageState {
-    username: string;
-    password: string;
+export interface IAuthPageProps {
+    store: IAppStore;
+    model: UserApi;
 }
 
-class AuthPage extends React.Component<RouteComponentProps<IAuthPageProps>, IAuthPageState> {
-    state: IAuthPageState = {
-        username: '',
-        password: '',
-    };
 
+class AuthPage extends React.Component<IAuthPageProps> {
     handleSignUp = async (values: IAuthFormValues, actions: FormikActions<IAuthFormValues>) => {
+        const UserApi = this.props.model;
         try {
-            await UserApi.instance.signUp(values.username, values.password, values.brainkeyPassword);
-            this.props.history.push(Routes.index);
+            await UserApi.signUp(values.username, values.password, values.brainkeyPassword);
         } catch (e) {
             actions.setErrors({ username: e.message });
         }
     };
 
     handleSignIn = async (values: IAuthFormValues, actions: FormikActions<IAuthFormValues>) => {
+        const UserApi = this.props.model;
         try {
-            await UserApi.instance.signIn(values.username, values.password, values.brainkeyPassword);
-            this.props.history.push(Routes.index);
+            await UserApi.signIn(values.username, values.password, values.brainkeyPassword);
         } catch (e) {
             actions.setErrors({ username: e.message });
         }
@@ -66,4 +59,4 @@ class AuthPage extends React.Component<RouteComponentProps<IAuthPageProps>, IAut
     }
 }
 
-export default withRouter(AuthPage);
+export default AuthPage;

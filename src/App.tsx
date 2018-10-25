@@ -1,10 +1,11 @@
 import React from 'react';
-import { Route, BrowserRouter as Router } from 'react-router-dom';
 import ChatPage from './pages/ChatPage';
 import AuthPage from './pages/AuthPage';
 
 import { Routes } from './services/Routes';
 import { injectGlobal } from 'styled-components';
+import AppStore, { IAppStore } from './models/AppState';
+import UserApi from './services/UserApi';
 
 injectGlobal`
     html {
@@ -44,15 +45,24 @@ injectGlobal`
 
 `;
 
-export default class App extends React.Component {
+export default class App extends React.Component<{}, IAppStore> {
+    userModel: UserApi;
+    store = new AppStore(this.setState.bind(this), () => this.state);
+
+    constructor() {
+        super({});
+        this.state = this.store.defaultState;
+        this.userModel = new UserApi(this.store);
+    }
+
     render() {
+        const isAuthPage = this.state.chatModel == null;
+        const isChatPage = this.state.chatModel != null;
         return (
-            <Router>
-                <React.Fragment>
-                    <Route exact path={Routes.index} component={ChatPage} />
-                    <Route path={Routes.auth} component={AuthPage} />
-                </React.Fragment>
-            </Router>
+            <React.Fragment>
+                {isAuthPage && <AuthPage store={this.state as IAppStore} model={this.userModel} />}
+                {isChatPage && <ChatPage store={this.state as IAppStore} model={this.state.chatModel!} />}
+            </React.Fragment>
         );
     }
 }

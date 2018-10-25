@@ -1,27 +1,23 @@
 import React from 'react';
 import firebase from 'firebase';
-import { withRouter, RouteComponentProps, Redirect } from 'react-router';
-import { Routes } from '../services/Routes';
 import ChatWindow from '../components/ChatWindow';
 import ChatModel from '../models/ChatModel';
-import UserApi from '../services/UserApi';
+import { IAppStore } from '../models/AppState';
 
-export interface IChatPageProps extends RouteComponentProps<{}> {}
+export interface IChatPageProps {
+    store: IAppStore;
+    model: ChatModel;
+}
 
 class ChatPage extends React.Component<IChatPageProps> {
 
     signOut = () => {
-        this.props.history.push(Routes.auth);
         firebase.auth().signOut();
-        UserApi.instance.virgilE2ee!.cleanup();
     };
 
     render() {
-        if (!UserApi.instance.virgilE2ee) return <Redirect to={Routes.auth} />
-        if (!UserApi.instance.username) throw new Error('no user');
-        const chatModel = new ChatModel(UserApi.instance.username, UserApi.instance.virgilE2ee)
-        return <ChatWindow signOut={this.signOut} model={chatModel} />;
+        return <ChatWindow store={this.props.store} signOut={this.signOut} model={this.props.model} />;
     }
 }
 
-export default withRouter(ChatPage);
+export default ChatPage;
