@@ -4,6 +4,7 @@ import { VirgilPublicKey } from 'virgil-crypto';
 
 export default class EncryptedMessageList {
     receiverPublicKeys: Promise<VirgilPublicKey[]>;
+    
     constructor(readonly messageList: MessagesListModel, readonly virgilE2ee: EThree) {
         this.receiverPublicKeys = virgilE2ee.lookupPublicKeys([this.messageList.channel.receiver]);
     }

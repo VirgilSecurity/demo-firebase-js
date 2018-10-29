@@ -92,7 +92,6 @@ export default class AuthForm extends React.Component<IAuthFormProps, IAuthFormS
         }
 
         return promise
-            .then(() => this.setState({ isLoading: false }))
             .catch(() => this.setState({ isLoading: false }));
     };
 

@@ -19,12 +19,8 @@ export class ChatModel {
     sendMessage = async (message: string) => {
         if (!this.store.state.currentChannel) throw Error('set channel first');
         const currentChannel = this.channelsList.getChannel(this.store.state.currentChannel.id);
-        try {
-            await currentChannel.sendMessage(message);
-        } catch (error) {
-            this.store.setState({ error });
-            throw error;
-        }
+ 
+        return await currentChannel.sendMessage(message);
     };
 
     listenMessages = async (channel: IChannel) => {
