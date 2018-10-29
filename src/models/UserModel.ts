@@ -1,6 +1,6 @@
 import firebase from 'firebase';
-import { FirebaseCollections } from './helpers/FirebaseCollections';
 import { EThree } from '@virgilsecurity/e3kit';
+import { FirebaseCollections } from './helpers/FirebaseCollections';
 import AppStore from './AppState';
 import ChatModel from './ChatModel';
 
@@ -19,7 +19,7 @@ class UserApi {
                         const token = await user.getIdToken();
 
                         let response = await fetch(
-                            'https:///YOUR_FIREBASE_ENDPOINT.cloudfunctions.net/api/generate_jwt',
+                            'https://YOUR_FIREBASE_ENDPOINT.cloudfunctions.net/api/generate_jwt',
                             {
                                 headers: new Headers({
                                     'Content-Type': 'application/json',
