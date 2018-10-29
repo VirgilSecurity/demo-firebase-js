@@ -36,6 +36,7 @@ class AuthPage extends React.Component<IAuthPageProps> {
             await UserApi.signUp(values.username, values.password, values.brainkeyPassword);
         } catch (e) {
             actions.setErrors({ username: e.message });
+            throw e;
         }
     };
 
@@ -45,6 +46,7 @@ class AuthPage extends React.Component<IAuthPageProps> {
             await UserApi.signIn(values.username, values.password, values.brainkeyPassword);
         } catch (e) {
             actions.setErrors({ username: e.message });
+            throw e;
         }
     };
     

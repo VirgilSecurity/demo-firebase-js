@@ -39,6 +39,7 @@ export default class ChatPage extends React.Component<IChatPageProps> {
     }
 
     selectChannel = (channelInfo: IChannel) => this.props.model.listenMessages(channelInfo);
+    signOut = () => firebase.auth().signOut();
 
     render() {
         if (this.props.store.error) alert(this.props.store.error);
@@ -50,7 +51,7 @@ export default class ChatPage extends React.Component<IChatPageProps> {
                     </LinkButton>
                     <RightSide>
                         {this.props.store.username}
-                        <LinkButton color="white" onClick={firebase.auth().signOut}>
+                        <LinkButton color="white" onClick={this.signOut}>
                             logout
                         </LinkButton>
                     </RightSide>
