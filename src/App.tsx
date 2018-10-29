@@ -4,7 +4,7 @@ import AuthPage from './pages/AuthPage';
 
 import { injectGlobal } from 'styled-components';
 import AppStore, { IAppStore } from './models/AppState';
-import UserApi from './services/UserApi';
+import UserApi from './models/UserModel';
 
 injectGlobal`
     html {

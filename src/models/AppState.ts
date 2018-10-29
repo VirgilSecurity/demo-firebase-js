@@ -1,6 +1,6 @@
 import { IChannel } from './ChannelModel';
 import { IMessage } from './MessageListModel';
-import { Routes } from '../services/Routes';
+import { Routes } from './helpers/Routes';
 import ChatModel from './ChatModel';
 
 export interface IAppStore {

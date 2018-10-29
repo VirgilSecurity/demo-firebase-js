@@ -2,7 +2,7 @@ import * as React from 'react';
 import styled from 'styled-components';
 import AuthForm, { IAuthFormValues } from '../components/AuthForm';
 import { FormikActions } from 'formik';
-import UserApi from '../services/UserApi';
+import UserApi from '../models/UserModel';
 import { IAppStore } from '../models/AppState';
 
 const Background = styled.div`

@@ -1,8 +1,8 @@
 import firebase from 'firebase';
-import { FirebaseCollections } from './FirebaseCollections';
+import { FirebaseCollections } from './helpers/FirebaseCollections';
 import { EThree } from '@virgilsecurity/e3kit';
-import AppStore from '../models/AppState';
-import ChatModel from '../models/ChatModel';
+import AppStore from './AppState';
+import ChatModel from './ChatModel';
 
 export type AuthHandler = (client: EThree | null) => void;
 

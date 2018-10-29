@@ -1,4 +1,4 @@
-import { FirebaseCollections } from '../services/FirebaseCollections';
+import { FirebaseCollections } from './helpers/FirebaseCollections';
 import firebase from 'firebase';
 import ChannelModel, { IChannel } from './ChannelModel';
 import { EThree } from '@virgilsecurity/e3kit';

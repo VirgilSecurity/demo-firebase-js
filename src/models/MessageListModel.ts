@@ -1,4 +1,4 @@
-import { FirebaseCollections } from '../services/FirebaseCollections';
+import { FirebaseCollections } from './helpers/FirebaseCollections';
 import ChannelListModel from './ChannelListModel';
 import firebase from 'firebase';
 import ChannelModel from './ChannelModel';
