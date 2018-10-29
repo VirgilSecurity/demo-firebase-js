@@ -19,7 +19,7 @@ class UserApi {
                         const token = await user.getIdToken();
 
                         let response = await fetch(
-                            'https:///us-central1-js-chat-ff5ca.cloudfunctions.net/api/generate_jwt',
+                            'https:///YOUR_FIREBASE_ENDPOINT.cloudfunctions.net/api/generate_jwt',
                             {
                                 headers: new Headers({
                                     'Content-Type': 'application/json',
