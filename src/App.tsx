@@ -2,7 +2,6 @@ import React from 'react';
 import ChatPage from './pages/ChatPage';
 import AuthPage from './pages/AuthPage';
 
-import { Routes } from './services/Routes';
 import { injectGlobal } from 'styled-components';
 import AppStore, { IAppStore } from './models/AppState';
 import UserApi from './services/UserApi';
@@ -48,9 +47,9 @@ injectGlobal`
 export default class App extends React.Component<{}, IAppStore> {
     userModel: UserApi;
     store = new AppStore(this.setState.bind(this), () => this.state);
-
-    constructor() {
-        super({});
+    
+    constructor(props: {}) {
+        super(props);
         this.state = this.store.defaultState;
         this.userModel = new UserApi(this.store);
     }

@@ -1,12 +1,12 @@
 {
-  "presets": ["env", "react", "es2017"],
-  "sourceMaps": "inline",
+    "presets": [
+        "@babel/react",
+        "@babel/env",
+        "@babel/preset-typescript"
+    ],
   "plugins": [
-    "react-hot-loader/babel", ["transform-runtime",
-      {
-        "polyfill": false,
-        "regenerator": true
-      }
-    ]
-  ]
+    "@babel/proposal-class-properties",
+    "@babel/proposal-object-rest-spread"
+  ],
+  "sourceMaps": "inline"
 }

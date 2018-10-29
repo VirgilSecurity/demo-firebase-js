@@ -52,23 +52,23 @@ class UserApi {
 
     async signUp(username: string, password: string, brainkeyPassword: string) {
         username = username.toLocaleLowerCase();
-
+        
         try {
             await firebase
                 .auth()
                 .createUserWithEmailAndPassword(username + this.postfix, password)
-
+            
             this.state.setState({ username: username })
         } catch (e) {
             throw e;
         }
-
+        
         this.collectionRef.doc(username).set({
             createdAt: new Date(),
             channels: [],
         });
         const eThree = await this.eThree;
-        await eThree.bootstrap(brainkeyPassword);
+        return await eThree.bootstrap(brainkeyPassword);
     }
 
     async signIn(username: string, password: string, brainkeyPassword: string) {
