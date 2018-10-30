@@ -4,10 +4,11 @@ import ChannelModel, { IChannel } from './ChannelModel';
 import { EThree } from '@virgilsecurity/e3kit';
 
 export default class ChannelListModel {
-    static collectionRef = firebase.firestore().collection(FirebaseCollections.Channels);
+    static channelCollectionRef = firebase.firestore().collection(FirebaseCollections.Channels);
+    static userCollectionRef = firebase.firestore().collection(FirebaseCollections.Users);
     channels: ChannelModel[] = [];
 
-    constructor(private username: string, private virgilE2ee: EThree) {}
+    constructor(private senderUsername: string, private virgilE2ee: EThree) {}
 
     getChannel(channelId: string) {
         const channel = this.channels.find(e => e.id === channelId);
@@ -15,44 +16,47 @@ export default class ChannelListModel {
         return channel;
     }
 
-    listenUpdates(username: string, cb: (channels: IChannel[]) => void) {
-        return ChannelListModel.collectionRef
-            .where('members', 'array-contains', username)
-            .onSnapshot(snapshot => {
-                const channels = snapshot.docs.map(this.getChannelFromSnapshot);
-                cb(channels);
-                return snapshot.docChanges().forEach(change => {
-                    if (change.type === 'added') {
-                        const channel = this.getChannelFromSnapshot(change.doc);
-                        this.channels.push(new ChannelModel(channel, this.username, this.virgilE2ee));
-                    }
-                });
-            });
+    listenUpdates(senderUsername: string, cb: (channels: ChannelModel[]) => void) {
+        return ChannelListModel.userCollectionRef.doc(senderUsername).onSnapshot(async snapshot => {
+            const channelIds = snapshot.data()!.channels as string[];
+
+            const channelsRefs = await Promise.all(
+                channelIds.map((id: string) => ChannelListModel.channelCollectionRef.doc(id).get()),
+            );
+
+            const channels = channelsRefs.map(this.getChannelFromSnapshot);
+            this.channels = channels.map(channel => new ChannelModel(channel, senderUsername, this.virgilE2ee));
+            cb(this.channels);
+        });
     }
 
-    async createChannel(receiver: string) {
+    async createChannel(receiverUsername: string) {
         // We are using email auth provider, so all nicknames are lowercased by firebase
-        receiver = receiver.toLowerCase();
-        if (receiver === this.username) throw new Error('Autocommunication is not supported yet');
-        const hasChat = this.channels.some(e => e.receiver === receiver);
+        receiverUsername = receiverUsername.toLowerCase();
+        if (receiverUsername === this.senderUsername) {
+            throw new Error('Autocommunication is not supported yet');
+        }
+        const hasChat = this.channels.some(e => e.receiver.username === receiverUsername);
         if (hasChat) throw new Error('You already has this channel');
 
         const receiverRef = firebase
             .firestore()
             .collection(FirebaseCollections.Users)
-            .doc(receiver);
+            .doc(receiverUsername);
 
         const senderRef = firebase
             .firestore()
             .collection(FirebaseCollections.Users)
-            .doc(this.username);
+            .doc(this.senderUsername);
 
         const [receiverDoc, senderDoc] = await Promise.all([receiverRef.get(), senderRef.get()]);
         if (!receiverDoc.exists) throw new Error("User doesn't exist");
-
-        const channel = await ChannelListModel.collectionRef.add({
+        const channel = await ChannelListModel.channelCollectionRef.add({
             count: 0,
-            members: [this.username, receiver],
+            members: [
+                { username: this.senderUsername, uid: senderDoc.data()!.uid },
+                { username: receiverUsername, uid: receiverDoc.data()!.uid },
+            ],
         });
 
         firebase.firestore().runTransaction(async transaction => {
@@ -71,7 +75,7 @@ export default class ChannelListModel {
         });
     }
 
-    private getChannelFromSnapshot(snapshot: firebase.firestore.QueryDocumentSnapshot): IChannel {
+    private getChannelFromSnapshot(snapshot: firebase.firestore.DocumentSnapshot): IChannel {
         return {
             ...(snapshot.data() as IChannel),
             id: snapshot.id,

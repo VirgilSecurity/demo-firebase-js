@@ -42,9 +42,6 @@ export default class AuthForm extends React.Component<IAuthFormProps, IAuthFormS
 
     validateForm = (values: IAuthFormValues) => {
         let errors: FormikErrors<IAuthFormValues> = {};
-        if (!/^[a-zA-Z0-9._]+$/.test(values.username)) {
-            errors.username = 'only latin symbols, numbers, dot and underscore allowed';
-        }
 
         if (values.password === '' || values.password == null) {
             errors.password = 'required';

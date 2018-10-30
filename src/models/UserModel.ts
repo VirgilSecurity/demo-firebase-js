@@ -7,9 +7,9 @@ import ChatModel from './ChatModel';
 export type AuthHandler = (client: EThree | null) => void;
 
 class UserApi {
-    postfix = '@virgilfirebase.com';
     collectionRef = firebase.firestore().collection(FirebaseCollections.Users);
     eThree: Promise<EThree>;
+    isManualLogin: boolean = false;
 
     constructor(public state: AppStore) {
         this.eThree = new Promise((resolve, reject) => {
@@ -38,6 +38,10 @@ class UserApi {
                     const eThreePromise = EThree.init(getToken);
 
                     eThreePromise.then(resolve).catch(reject);
+                    if (!this.isManualLogin) {
+                        eThreePromise.then(eThree => this.createChatModel(user.email!, eThree));
+                        this.isManualLogin = false;
+                    }
 
                     this.eThree = eThreePromise;
                 } else {
@@ -49,10 +53,11 @@ class UserApi {
     }
 
     async signUp(username: string, password: string, brainkeyPassword: string) {
+        this.isManualLogin = true;
         username = username.toLocaleLowerCase();
-
+        let userInfo: firebase.auth.UserCredential;
         try {
-            await firebase.auth().createUserWithEmailAndPassword(username + this.postfix, password);
+            userInfo = await firebase.auth().createUserWithEmailAndPassword(username, password);
 
             this.state.setState({ username: username });
         } catch (e) {
@@ -61,6 +66,7 @@ class UserApi {
 
         this.collectionRef.doc(username).set({
             createdAt: new Date(),
+            uid: userInfo.user!.uid,
             channels: [],
         });
         const eThree = await this.eThree;
@@ -70,13 +76,16 @@ class UserApi {
     }
 
     async signIn(username: string, password: string, brainkeyPassword: string) {
+        this.isManualLogin = true;
         username = username.toLocaleLowerCase();
-        await firebase.auth().signInWithEmailAndPassword(username + this.postfix, password);
+
+        await firebase.auth().signInWithEmailAndPassword(username, password);
 
         this.state.setState({ username: username });
 
         const eThree = await this.eThree;
-        await eThree.bootstrap(brainkeyPassword)
+        await eThree
+            .bootstrap(brainkeyPassword)
             .then(() => this.createChatModel(username, eThree));
     }
 

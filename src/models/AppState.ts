@@ -1,13 +1,12 @@
-import { IChannel } from './ChannelModel';
+import ChannelModel, { IChannel } from './ChannelModel';
 import { IMessage } from './MessageListModel';
-import { Routes } from './helpers/Routes';
 import ChatModel from './ChatModel';
 
 export interface IAppStore {
     chatModel: null | ChatModel;
     error: null | Error | string;
     username: string | null;
-    channels: IChannel[];
+    channels: ChannelModel[];
     messages: IMessage[];
     currentChannel: IChannel | null;
 }
