@@ -6,40 +6,43 @@ import ChatModel from './ChatModel';
 
 export type AuthHandler = (client: EThree | null) => void;
 
+const getTokenFromFetchResponse = (res: Response) => {
+    return res.ok
+        ? res.json().then((data: { token: string }) => data.token)
+        : Promise.reject(new Error('Error in getJWT with code: ' + res.status));
+}
+
+const fetchToken = (token: string) => fetch(
+    'https://YOUR_FIREBASE_ENDPOINT.cloudfunctions.net/api/generate_jwt',
+    {
+        headers: new Headers({
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+        }),
+        method: 'POST',
+    },
+).then(getTokenFromFetchResponse);
+
 class UserApi {
     postfix = '@virgilfirebase.com';
     collectionRef = firebase.firestore().collection(FirebaseCollections.Users);
     eThree: Promise<EThree>;
+    isManualLogin: boolean = false;
 
     constructor(public state: AppStore) {
         this.eThree = new Promise((resolve, reject) => {
             firebase.auth().onAuthStateChanged(user => {
                 if (user) {
-                    const getToken = async () => {
-                        const token = await user.getIdToken();
+                    const getToken = () => user.getIdToken().then(fetchToken);
 
-                        let response = await fetch(
-                            'https://YOUR_FIREBASE_ENDPOINT.cloudfunctions.net/api/generate_jwt',
-                            {
-                                headers: new Headers({
-                                    'Content-Type': 'application/json',
-                                    Authorization: `Bearer ${token}`,
-                                }),
-                                method: 'POST',
-                            },
-                        );
-                        if (response.ok) {
-                            const data = (await response.json()) as { token: string };
-                            return data.token;
-                        }
-                        throw new Error('Error in getJWT with code: ' + response.status);
-                    };
+                    this.eThree = EThree.init(getToken);
 
-                    const eThreePromise = EThree.init(getToken);
-
-                    eThreePromise.then(resolve).catch(reject);
-
-                    this.eThree = eThreePromise;
+                    this.eThree.then(resolve).catch(reject);
+                    
+                    if (!this.isManualLogin) {
+                        this.eThree.then(eThree => this.createChatModel(user.email!, eThree));
+                        this.isManualLogin = false;
+                    }
                 } else {
                     this.eThree.then(sdk => sdk.cleanup());
                     this.state.setState(state.defaultState);
@@ -50,7 +53,7 @@ class UserApi {
 
     async signUp(username: string, password: string, brainkeyPassword: string) {
         username = username.toLocaleLowerCase();
-
+        this.isManualLogin = true;
         try {
             await firebase.auth().createUserWithEmailAndPassword(username + this.postfix, password);
 
@@ -70,14 +73,14 @@ class UserApi {
     }
 
     async signIn(username: string, password: string, brainkeyPassword: string) {
+        this.isManualLogin = true;
         username = username.toLocaleLowerCase();
         await firebase.auth().signInWithEmailAndPassword(username + this.postfix, password);
 
         this.state.setState({ username: username });
 
         const eThree = await this.eThree;
-        await eThree.bootstrap(brainkeyPassword)
-            .then(() => this.createChatModel(username, eThree));
+        await eThree.bootstrap(brainkeyPassword).then(() => this.createChatModel(username, eThree));
     }
 
     async createChatModel(username: string, eThree: EThree) {
