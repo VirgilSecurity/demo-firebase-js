@@ -25,7 +25,7 @@ class UserApi {
                                     'Content-Type': 'application/json',
                                     Authorization: `Bearer ${token}`,
                                 }),
-                                method: 'POST',
+                                method: 'GET',
                             },
                         );
                         if (response.ok) {
