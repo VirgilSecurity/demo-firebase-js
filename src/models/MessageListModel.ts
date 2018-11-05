@@ -7,8 +7,8 @@ export interface IMessage {
     id: string;
     body: string;
     createdAt: Date;
-    receiver: ChannelUser;
-    sender: ChannelUser;
+    receiver: string;
+    sender: string;
 }
 
 export default class MessagesListModel {
@@ -60,8 +60,8 @@ export default class MessagesListModel {
             transaction.set(messagesCollectionRef, {
                 body: message,
                 createdAt: new Date(),
-                sender: this.sender,
-                receiver: this.channel.receiver,
+                sender: this.sender.username,
+                receiver: this.channel.receiver.username,
             });
         }
 

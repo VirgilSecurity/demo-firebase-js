@@ -41,10 +41,10 @@ export interface IMessageProps {
 export default function Message({ message }: IMessageProps) {
     return (
         <MessageContainer>
-            <MessageAvatar>{message.sender.username.slice(0, 2).toUpperCase()}</MessageAvatar>
+            <MessageAvatar>{message.sender.slice(0, 2).toUpperCase()}</MessageAvatar>
             <MessageContent>
                 <MessageHeader>
-                    <h3>{message.sender.username}</h3>
+                    <h3>{message.sender}</h3>
                     <span>{format(message.createdAt, 'HH:mm:ss')}</span>
                 </MessageHeader>
                 <MessageBody>{message.body === '' ? '*Message Deleted*' : message.body}</MessageBody>
