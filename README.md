@@ -3,6 +3,8 @@ You can reuse this sample in any projects where you want to end-to-end protect u
 
 [Watch JS setup tutorial on YouTube](https://youtu.be/Xddrwqhg4LY)
 
+* Looking for other client platforms? [iOS](https://github.com/VirgilSecurity/demo-firebase-ios) | [Android](https://github.com/VirgilSecurity/demo-firebase-android)
+
 ## Prerequisites
 
 * [node v8.11.3](https://nodejs.org/en/download) or later
