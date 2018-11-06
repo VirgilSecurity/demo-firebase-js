@@ -80,7 +80,7 @@ export default class MessagesListModel {
 
     private blindMessage = async (message: IMessage) => {
         // if messages loaded by receiver do not blind body
-        if (this.channel.receiver.uid === message.receiver.uid) return;
+        if (this.channel.receiver.username === message.receiver) return;
         return ChannelListModel.channelCollectionRef
             .doc(this.channel.id)
             .collection(FirebaseCollections.Messages)

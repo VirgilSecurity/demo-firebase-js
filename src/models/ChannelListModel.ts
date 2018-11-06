@@ -8,7 +8,7 @@ export default class ChannelListModel {
     static userCollectionRef = firebase.firestore().collection(FirebaseCollections.Users);
     channels: ChannelModel[] = [];
 
-    constructor(private senderUsername: string, private virgilE2ee: EThree) {}
+    constructor(private senderUsername: string, private e3kit: EThree) {}
 
     getChannel(channelId: string) {
         const channel = this.channels.find(e => e.id === channelId);
@@ -25,7 +25,9 @@ export default class ChannelListModel {
             );
 
             const channels = channelsRefs.map(this.getChannelFromSnapshot);
-            this.channels = channels.map(channel => new ChannelModel(channel, senderUsername, this.virgilE2ee));
+            this.channels = channels.map(
+                channel => new ChannelModel(channel, senderUsername, this.e3kit),
+            );
             cb(this.channels);
         });
     }
@@ -48,27 +50,32 @@ export default class ChannelListModel {
             .firestore()
             .collection(FirebaseCollections.Users)
             .doc(this.senderUsername);
-
         const [receiverDoc, senderDoc] = await Promise.all([receiverRef.get(), senderRef.get()]);
-        if (!receiverDoc.exists) throw new Error("User doesn't exist");
-        const channel = await ChannelListModel.channelCollectionRef.add({
-            count: 0,
-            members: [
-                { username: this.senderUsername, uid: senderDoc.data()!.uid },
-                { username: receiverUsername, uid: receiverDoc.data()!.uid },
-            ],
-        });
 
-        firebase.firestore().runTransaction(async transaction => {
+        if (!receiverDoc.exists) throw new Error("receiverDoc doesn't exist");
+        if (!senderDoc.exists) throw new Error("senderDoc doesn't exist");
+
+        const channelId = this.getChannelId(receiverUsername, this.senderUsername);
+        const channelRef = await ChannelListModel.channelCollectionRef.doc(channelId);
+
+        return await firebase.firestore().runTransaction(async transaction => {
             const senderChannels = senderDoc.data()!.channels;
             const receiverChannels = receiverDoc.data()!.channels;
 
-            transaction.update(receiverRef, {
-                channels: senderChannels ? senderChannels.concat(channel.id) : [channel.id],
+            transaction.set(channelRef, {
+                count: 0,
+                members: [
+                    { username: this.senderUsername, uid: senderDoc.data()!.uid },
+                    { username: receiverUsername, uid: receiverDoc.data()!.uid },
+                ],
             });
 
             transaction.update(senderRef, {
-                channels: receiverChannels ? receiverChannels.concat(channel.id) : [channel.id],
+                channels: senderChannels ? senderChannels.concat(channelId) : [channelId],
+            });
+
+            transaction.update(receiverRef, {
+                channels: receiverChannels ? receiverChannels.concat(channelId) : [channelId],
             });
 
             return transaction;
@@ -80,5 +87,12 @@ export default class ChannelListModel {
             ...(snapshot.data() as IChannel),
             id: snapshot.id,
         } as IChannel;
+    }
+
+    private getChannelId(user1: string, user2: string) {
+        const combination = user1 > user2 ? user1 + user2 : user1 + user2;
+        return this.e3kit.toolbox.virgilCrypto
+            .calculateHash(combination)
+            .toString('base64');
     }
 }

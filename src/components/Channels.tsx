@@ -22,7 +22,9 @@ const Username = styled.div`
     display: flex;
     align-items: center;
     flex: 1 0 auto;
-    padding: 20px;
+    max-width: 130px;
+    word-break: break-all;
+    padding: 0px 20px;
 `;
 
 export interface IChannelsProps {

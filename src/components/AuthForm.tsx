@@ -51,9 +51,6 @@ export default class AuthForm extends React.Component<IAuthFormProps, IAuthFormS
             errors.brainkeyPassword = 'required';
         }
 
-        if (values.brainkeyPassword === values.password) {
-            errors.brainkeyPassword = 'password and private key passwords must be different';
-        }
 
         return errors;
     };
