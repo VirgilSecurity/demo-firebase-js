@@ -2,6 +2,7 @@ import { FirebaseCollections } from './helpers/FirebaseCollections';
 import firebase from 'firebase';
 import ChannelModel, { IChannel } from './ChannelModel';
 import { EThree } from '@virgilsecurity/e3kit';
+import { base64UrlFromBase64 } from './helpers/base64UrlFromBase64';
 
 export default class ChannelListModel {
     static channelCollectionRef = firebase.firestore().collection(FirebaseCollections.Channels);
@@ -92,8 +93,8 @@ export default class ChannelListModel {
     private getChannelId(username1: string, username2: string) {
         // Make hash of users the same independently of usernames order
         const combination = username1 > username2 ? username1 + username2 : username1 + username2;
-        return this.e3kit.toolbox.virgilCrypto
+        return base64UrlFromBase64(this.e3kit.toolbox.virgilCrypto
             .calculateHash(combination)
-            .toString('base64');
+            .toString('base64'));
     }
 }
