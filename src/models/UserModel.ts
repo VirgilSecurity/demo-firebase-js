@@ -6,6 +6,9 @@ import ChatModel from './ChatModel';
 
 export type AuthHandler = (client: EThree | null) => void;
 
+const FIREBASE_FUNCTION_URL = 'https://YOUR_FIREBASE_ENDPOINT.cloudfunctions.net/api';
+const ENDPOINT = `${FIREBASE_FUNCTION_URL}/virgil-jwt`;
+
 const getTokenFromFetchResponse = (res: Response) => {
     return res.ok
         ? res.json().then((data: { token: string }) => data.token)
@@ -13,7 +16,7 @@ const getTokenFromFetchResponse = (res: Response) => {
 }
 
 const fetchToken = (token: string) => fetch(
-    'https://YOUR_FIREBASE_ENDPOINT.cloudfunctions.net/api/generate_jwt',
+    ENDPOINT,
     {
         headers: new Headers({
             'Content-Type': 'application/json',
