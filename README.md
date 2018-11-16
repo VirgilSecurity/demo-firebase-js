@@ -26,9 +26,9 @@ In order for the app to work, you need to deploy a Firebase function that gives 
 ## Add your Firebase function URL and Firebase project config to app
 
 * **Copy your new Firebase function's URL**: go to the Firebase console -> your project -> Functions tab and copy your new function's url
-* **Paste it** into `src/services/VirgilApi.ts`:
+* **Paste it** into FIREBASE_FUNCTION_URL variable in `src/models/UserModel.ts`:
   ```
-  https://YOUR_FUNCTION_URL.cloudfunctions.net/api/generate_jwt
+  const FIREBASE_FUNCTION_URL = 'https://YOUR_FIREBASE_ENDPOINT.cloudfunctions.net/api';
   ```
 * Go back to your project's page in Firebase console, click the **gear icon** -> **Project settings**
 * Click **Add app** and choose **"</> Add Firebase to your web app"**
