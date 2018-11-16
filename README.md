@@ -21,7 +21,7 @@ In order for the app to work, you need to deploy a Firebase function that gives 
 
 * **[Follow instructions here](https://github.com/VirgilSecurity/e3kit-firebase-func)**
 
-### Configure Authorization
+### Configure Authentication
 
 * Select the **Authentication** panel and then click the **Sign In Method** tab.
 * Choose your authentication method and turn on the **Enable** switch, then follow instructions and click **Save**.
