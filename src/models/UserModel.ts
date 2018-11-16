@@ -52,20 +52,20 @@ class UserApi {
         });
     }
 
-    async signUp(username: string, password: string, brainkeyPassword: string) {
+    async signUp(email: string, password: string, brainkeyPassword: string) {
         this.isManualLogin = true;
-        username = username.toLocaleLowerCase();
+        email = email.toLocaleLowerCase();
         let userInfo: firebase.auth.UserCredential;
         this.isManualLogin = true;
         try {
-            userInfo = await firebase.auth().createUserWithEmailAndPassword(username, password);
+            userInfo = await firebase.auth().createUserWithEmailAndPassword(email, password);
 
-            this.state.setState({ username: username });
+            this.state.setState({ username: email });
         } catch (e) {
             throw e;
         }
 
-        this.collectionRef.doc(username).set({
+        this.collectionRef.doc(email).set({
             createdAt: new Date(),
             uid: userInfo.user!.uid,
             channels: [],
@@ -73,7 +73,7 @@ class UserApi {
         const eThree = await this.eThree;
         return await eThree
             .bootstrap(brainkeyPassword)
-            .then(() => this.createChatModel(username, eThree));
+            .then(() => this.createChatModel(email, eThree));
     }
 
     async signIn(username: string, password: string, brainkeyPassword: string) {

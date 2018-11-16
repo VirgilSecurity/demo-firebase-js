@@ -19,7 +19,22 @@ cd demo-firebase-js
 ## Connect your Virgil and Firebase accounts
 In order for the app to work, you need to deploy a Firebase function that gives out Virgil JWT tokens for your authenticated users. You'll also need to create a Firestore database with a specific rule set.
 
-* **[Follow instructions here](https://github.com/VirgilSecurity/demo-firebase-func)**
+* **[Follow instructions here](https://github.com/VirgilSecurity/e3kit-firebase-func)**
+
+### Configure Firestore Cloudstorage
+
+* Let's also set up a Firestore database for the sample apps: select the **Database** panel, select **Firebase Cloudstorage** click **Create database** under Firestore, choose **Start in test mode** and click **Enable**.
+* Once the database is created, click on the **Rules** tab, click **Edit rules** and paste:
+  ```
+  service cloud.firestore {
+    match /databases/{database}/documents {
+      match /{document=**} {
+        allow read, write: if request.auth.uid != null;
+      }
+    }
+  }
+  ```
+* Click **PUBLISH**.
 
 > You only need to do this once - if you did it already earlier or for your Android or iOS apps, don't need to do it again. 
 
