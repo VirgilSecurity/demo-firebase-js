@@ -21,9 +21,14 @@ In order for the app to work, you need to deploy a Firebase function that gives 
 
 * **[Follow instructions here](https://github.com/VirgilSecurity/e3kit-firebase-func)**
 
-### Configure Firestore Cloudstorage
+### Configure Authorization
 
-* Let's also set up a Firestore database for the sample apps: select the **Database** panel, select **Firebase Cloudstorage** click **Create database** under Firestore, choose **Start in test mode** and click **Enable**.
+* Select the **Authentication** panel and then click the **Sign In Method** tab.
+* Choose your authentication method and turn on the **Enable** switch, then follow instructions and click **Save**.
+
+### Configure Cloud Firestore
+
+* Let's also set up a Firestore database for the sample apps: select the **Database** panel, select **Cloud Firestore** click **Create database** under Firestore, choose **Start in test mode** and click **Enable**.
 * Once the database is created, click on the **Rules** tab, click **Edit rules** and paste:
   ```
   service cloud.firestore {
