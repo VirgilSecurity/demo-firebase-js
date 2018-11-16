@@ -59,7 +59,7 @@ export default class AuthForm extends React.Component<IAuthFormProps, IAuthFormS
         const error =
             form.touched.username && form.errors.username ? (form.errors.username as string) : null;
 
-        return <InputField label="username" error={error} {...field} />;
+        return <InputField label="email" error={error} {...field} />;
     };
 
     renderPasswordInput = ({ field, form }: FieldProps<IAuthFormValues>) => {
@@ -92,7 +92,7 @@ export default class AuthForm extends React.Component<IAuthFormProps, IAuthFormS
     renderForm = ({ isValid }: FormikProps<IAuthFormValues>) => {
         return (
             <Form>
-                <Field name="email" render={this.renderEmailInput} />
+                <Field name="username" render={this.renderEmailInput} />
                 <Field name="password" render={this.renderPasswordInput} />
                 <Field name="brainkeyPassword" render={this.renderBrainKeyPasswordInput} />
                 {this.state.isLoading ? this.renderLoading() : this.renderButtons(isValid)}
