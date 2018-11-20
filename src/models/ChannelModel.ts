@@ -6,19 +6,22 @@ import { EThree } from '@virgilsecurity/e3kit';
 export interface IChannel {
     id: string;
     count: number;
-    members: string[];
+    members: ChannelUser[];
 }
+
+export type ChannelUser = { username: string, uid: string };
 
 export default class ChannelModel implements IChannel {
     public id: string;
     public count: number;
-    public members: string[];
+    public members: ChannelUser[];
+    // public receiver: ChannelUser;
     private messageStorage: MessageStorage;
     private encryptedMessageList: CryptoMessageList;
 
     constructor(
         { id, count, members }: IChannel,
-        public sender: string,
+        public senderUsername: string,
         public virgilE2ee: EThree,
     ) {
         this.id = id;
@@ -32,7 +35,11 @@ export default class ChannelModel implements IChannel {
     }
 
     get receiver() {
-        return this.members.filter(e => e !== this.sender)[0];
+        return this.members.filter(e => e.username !== this.senderUsername)[0];
+    }
+    
+    get sender() {
+        return this.members.filter(e => e.username === this.senderUsername)[0];
     }
 
     async sendMessage(message: string) {

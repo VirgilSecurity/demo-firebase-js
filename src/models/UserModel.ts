@@ -6,6 +6,9 @@ import ChatModel from './ChatModel';
 
 export type AuthHandler = (client: EThree | null) => void;
 
+const FIREBASE_FUNCTION_URL = 'https://YOUR_FIREBASE_ENDPOINT.cloudfunctions.net/api';
+const ENDPOINT = `${FIREBASE_FUNCTION_URL}/virgil-jwt`;
+
 const getTokenFromFetchResponse = (res: Response) => {
     return res.ok
         ? res.json().then((data: { token: string }) => data.token)
@@ -13,18 +16,16 @@ const getTokenFromFetchResponse = (res: Response) => {
 }
 
 const fetchToken = (token: string) => fetch(
-    'https://YOUR_FIREBASE_ENDPOINT.cloudfunctions.net/api/generate_jwt',
+    ENDPOINT,
     {
         headers: new Headers({
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
-        }),
-        method: 'POST',
+        })
     },
 ).then(getTokenFromFetchResponse);
 
 class UserApi {
-    postfix = '@virgilfirebase.com';
     collectionRef = firebase.firestore().collection(FirebaseCollections.Users);
     eThree: Promise<EThree>;
     isManualLogin: boolean = false;
@@ -51,31 +52,35 @@ class UserApi {
         });
     }
 
-    async signUp(username: string, password: string, brainkeyPassword: string) {
-        username = username.toLocaleLowerCase();
+    async signUp(email: string, password: string, brainkeyPassword: string) {
+        this.isManualLogin = true;
+        email = email.toLocaleLowerCase();
+        let userInfo: firebase.auth.UserCredential;
         this.isManualLogin = true;
         try {
-            await firebase.auth().createUserWithEmailAndPassword(username + this.postfix, password);
+            userInfo = await firebase.auth().createUserWithEmailAndPassword(email, password);
 
-            this.state.setState({ username: username });
+            this.state.setState({ username: email });
         } catch (e) {
             throw e;
         }
 
-        this.collectionRef.doc(username).set({
+        this.collectionRef.doc(email).set({
             createdAt: new Date(),
+            uid: userInfo.user!.uid,
             channels: [],
         });
         const eThree = await this.eThree;
         return await eThree
             .bootstrap(brainkeyPassword)
-            .then(() => this.createChatModel(username, eThree));
+            .then(() => this.createChatModel(email, eThree));
     }
 
     async signIn(username: string, password: string, brainkeyPassword: string) {
         this.isManualLogin = true;
         username = username.toLocaleLowerCase();
-        await firebase.auth().signInWithEmailAndPassword(username + this.postfix, password);
+
+        await firebase.auth().signInWithEmailAndPassword(username, password);
 
         this.state.setState({ username: username });
 

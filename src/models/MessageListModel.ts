@@ -1,7 +1,7 @@
 import { FirebaseCollections } from './helpers/FirebaseCollections';
 import ChannelListModel from './ChannelListModel';
 import firebase from 'firebase';
-import ChannelModel from './ChannelModel';
+import ChannelModel, { ChannelUser } from './ChannelModel';
 
 export interface IMessage {
     id: string;
@@ -12,7 +12,7 @@ export interface IMessage {
 }
 
 export default class MessagesListModel {
-    constructor(public channel: ChannelModel, public sender: string) {}
+    constructor(public channel: ChannelModel, public sender: ChannelUser) {}
 
     async sendMessage(message: string) {
         firebase.firestore().runTransaction(transaction => {
@@ -21,7 +21,7 @@ export default class MessagesListModel {
     }
 
     listenUpdates(id: string, cb: (messages: IMessage[]) => void) {
-        return ChannelListModel.collectionRef
+        return ChannelListModel.channelCollectionRef
             .doc(id)
             .collection(FirebaseCollections.Messages)
             .orderBy('createdAt', 'asc')
@@ -48,7 +48,7 @@ export default class MessagesListModel {
         transaction: firebase.firestore.Transaction,
         message: string,
     ) => {
-        const channelRef = ChannelListModel.collectionRef.doc(this.channel.id);
+        const channelRef = ChannelListModel.channelCollectionRef.doc(this.channel.id);
         const snapshot = await transaction.get(channelRef);
         let messagesCount: number = snapshot.data()!.count;
         const messagesCollectionRef = channelRef
@@ -60,8 +60,8 @@ export default class MessagesListModel {
             transaction.set(messagesCollectionRef, {
                 body: message,
                 createdAt: new Date(),
-                sender: this.sender,
-                receiver: this.channel.receiver,
+                sender: this.sender.username,
+                receiver: this.channel.receiver.username,
             });
         }
 
@@ -80,8 +80,8 @@ export default class MessagesListModel {
 
     private blindMessage = async (message: IMessage) => {
         // if messages loaded by receiver do not blind body
-        if (this.channel.receiver === message.receiver) return;
-        return ChannelListModel.collectionRef
+        if (this.channel.receiver.username === message.receiver) return;
+        return ChannelListModel.channelCollectionRef
             .doc(this.channel.id)
             .collection(FirebaseCollections.Messages)
             .doc(message.id)

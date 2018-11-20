@@ -19,16 +19,36 @@ cd demo-firebase-js
 ## Connect your Virgil and Firebase accounts
 In order for the app to work, you need to deploy a Firebase function that gives out Virgil JWT tokens for your authenticated users. You'll also need to create a Firestore database with a specific rule set.
 
-* **[Follow instructions here](https://github.com/VirgilSecurity/demo-firebase-func)**
+* **[Follow instructions here](https://github.com/VirgilSecurity/e3kit-firebase-func)**
+
+### Configure Authentication
+
+* Select the **Authentication** panel and then click the **Sign In Method** tab.
+* Choose your authentication method and turn on the **Enable** switch, then follow instructions and click **Save**.
+
+### Configure Cloud Firestore
+
+* Let's also set up a Firestore database for the sample apps: select the **Database** panel, select **Cloud Firestore** click **Create database** under Firestore, choose **Start in test mode** and click **Enable**.
+* Once the database is created, click on the **Rules** tab, click **Edit rules** and paste:
+  ```
+  service cloud.firestore {
+    match /databases/{database}/documents {
+      match /{document=**} {
+        allow read, write: if request.auth.uid != null;
+      }
+    }
+  }
+  ```
+* Click **PUBLISH**.
 
 > You only need to do this once - if you did it already earlier or for your Android or iOS apps, don't need to do it again. 
 
 ## Add your Firebase function URL and Firebase project config to app
 
 * **Copy your new Firebase function's URL**: go to the Firebase console -> your project -> Functions tab and copy your new function's url
-* **Paste it** into `src/services/VirgilApi.ts`:
+* **Paste it** into FIREBASE_FUNCTION_URL variable in `src/models/UserModel.ts`:
   ```
-  https://YOUR_FUNCTION_URL.cloudfunctions.net/api/generate_jwt
+  const FIREBASE_FUNCTION_URL = 'https://YOUR_FIREBASE_ENDPOINT.cloudfunctions.net/api';
   ```
 * Go back to your project's page in Firebase console, click the **gear icon** -> **Project settings**
 * Click **Add app** and choose **"</> Add Firebase to your web app"**

@@ -42,9 +42,6 @@ export default class AuthForm extends React.Component<IAuthFormProps, IAuthFormS
 
     validateForm = (values: IAuthFormValues) => {
         let errors: FormikErrors<IAuthFormValues> = {};
-        if (!/^[a-zA-Z0-9._]+$/.test(values.username)) {
-            errors.username = 'only latin symbols, numbers, dot and underscore allowed';
-        }
 
         if (values.password === '' || values.password == null) {
             errors.password = 'required';
@@ -54,9 +51,6 @@ export default class AuthForm extends React.Component<IAuthFormProps, IAuthFormS
             errors.brainkeyPassword = 'required';
         }
 
-        if (values.brainkeyPassword === values.password) {
-            errors.brainkeyPassword = 'password and private key passwords must be different';
-        }
 
         return errors;
     };
@@ -65,7 +59,7 @@ export default class AuthForm extends React.Component<IAuthFormProps, IAuthFormS
         const error =
             form.touched.username && form.errors.username ? (form.errors.username as string) : null;
 
-        return <InputField label="username" error={error} {...field} />;
+        return <InputField label="email" error={error} {...field} />;
     };
 
     renderPasswordInput = ({ field, form }: FieldProps<IAuthFormValues>) => {
