@@ -1,7 +1,7 @@
 import { FirebaseCollections } from './helpers/FirebaseCollections';
 import ChannelListModel from './ChannelListModel';
 import firebase from 'firebase';
-import ChannelModel, { ChannelUser } from './ChannelModel';
+import ChannelModel from './ChannelModel';
 
 export interface IMessage {
     id: string;
