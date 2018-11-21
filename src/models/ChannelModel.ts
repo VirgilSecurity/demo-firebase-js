@@ -29,7 +29,7 @@ export default class ChannelModel implements IChannel {
         this.members = members;
         this.messageStorage = new MessageStorage(this.id);
 
-        const messageList = new MessagesListModel(this, this.sender);
+        const messageList = new MessagesListModel(this);
 
         this.encryptedMessageList = new CryptoMessageList(messageList, virgilE2ee);
     }

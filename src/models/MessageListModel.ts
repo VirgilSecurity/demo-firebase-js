@@ -12,7 +12,7 @@ export interface IMessage {
 }
 
 export default class MessagesListModel {
-    constructor(public channel: ChannelModel, public sender: ChannelUser) {}
+    constructor(public channel: ChannelModel) {}
 
     async sendMessage(message: string) {
         firebase.firestore().runTransaction(transaction => {
@@ -60,7 +60,7 @@ export default class MessagesListModel {
             transaction.set(messagesCollectionRef, {
                 body: message,
                 createdAt: new Date(),
-                sender: this.sender.username,
+                sender: this.channel.sender.username,
                 receiver: this.channel.receiver.username,
             });
         }

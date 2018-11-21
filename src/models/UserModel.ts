@@ -36,7 +36,7 @@ class UserApi {
                 if (user) {
                     const getToken = () => user.getIdToken().then(fetchToken);
 
-                    this.eThree = EThree.init(getToken);
+                    this.eThree = EThree.initialize(getToken);
 
                     this.eThree.then(resolve).catch(reject);
                     
