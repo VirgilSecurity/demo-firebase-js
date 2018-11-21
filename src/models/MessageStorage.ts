@@ -1,5 +1,5 @@
-import { IMessage } from '../components/Messages';
 import { differenceBy } from 'lodash';
+import { IMessage } from './MessageListModel';
 
 const messageStorageName = 'virgil_firebase_messages';
 
@@ -44,8 +44,7 @@ export default class MessageStorage {
         const savedMessages = window.localStorage.getItem(messageStorageName);
         let parsedStore: { [s: string]: IMessage[] } = {};
         if (savedMessages) parsedStore = JSON.parse(savedMessages);
-        const hasMessages =
-            parsedStore[this.channelId] && Array.isArray(parsedStore[this.channelId]);
+        const hasMessages = parsedStore[this.channelId] && Array.isArray(parsedStore[this.channelId]);
         messages = hasMessages ? parsedStore[this.channelId] : [];
         messages.forEach(m => (m.createdAt = new Date(m.createdAt)));
         this.messages = messages;

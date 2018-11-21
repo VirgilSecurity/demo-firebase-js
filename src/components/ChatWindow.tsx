@@ -1,11 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
 import Channels from '../components/Channels';
-import Messages, { IMessage } from '../components/Messages';
+import Messages from '../components/Messages';
 import MessageField from '../components/MessageField';
 import { PrimaryButton, LinkButton } from '../components/Primitives';
 import ChatModel from '../models/ChatModel';
 import { IChannel } from '../models/ChannelModel';
+import { IAppStore } from '../models/AppState';
 
 const ChatContainer = styled.div`
     max-width: 1024px;
@@ -56,25 +57,12 @@ const RightSide = styled.span`
 
 export interface IChatPageProps {
     model: ChatModel;
+    store: IAppStore;
     signOut: () => void;
 }
 
-export interface IChatPageState {
-    error: null | Error | string;
-    username: string | null;
-    hasPrivateKey: boolean;
-    channels: IChannel[];
-    messages: IMessage[];
-    currentChannel: IChannel | null;
-}
-
-export default class ChatPage extends React.Component<IChatPageProps, IChatPageState> {
+export default class ChatPage extends React.Component<IChatPageProps> {
     model = this.props.model;
-    state = this.model.state.store;
-
-    componentDidMount() {
-        this.model.state.on('change', this.setState.bind(this));
-    }
 
     componentWillUnmount() {
         this.model.unsubscribe();
@@ -84,16 +72,24 @@ export default class ChatPage extends React.Component<IChatPageProps, IChatPageS
         const receiver = prompt('receiver', '');
         if (!receiver) return alert('Add receiver please');
         try {
-            await this.model.channelsList.createChannel(receiver, this.model.username);
+            await this.model.channelsList.createChannel(receiver);
         } catch (e) {
             alert(e.message);
         }
     };
 
+    sendMessage = async (message: string) => {
+        try {
+            await this.model.sendMessage(message)
+        } catch (e) {
+            alert(e);
+        }
+    }
+
     selectChannel = (channelInfo: IChannel) => this.model.listenMessages(channelInfo);
 
     render() {
-        if (this.state.error) alert(this.state.error);
+        if (this.props.store.error) alert(this.props.store.error);
         return (
             <ChatContainer>
                 <Header>
@@ -101,7 +97,7 @@ export default class ChatPage extends React.Component<IChatPageProps, IChatPageS
                         Virgilgram
                     </LinkButton>
                     <RightSide>
-                        {this.state.username}
+                        {this.props.store.username}
                         <LinkButton color="white" onClick={this.props.signOut}>
                             logout
                         </LinkButton>
@@ -111,23 +107,21 @@ export default class ChatPage extends React.Component<IChatPageProps, IChatPageS
                     <SideBar>
                         <Channels
                             onClick={this.selectChannel}
-                            username={this.state.username!}
-                            channels={this.state.hasPrivateKey ? this.state.channels : []}
+                            username={this.props.store.username!}
+                            channels={this.props.store.channels}
                         />
                         <BottomPrimaryButton onClick={this.createChannel}>
                             New Channel
                         </BottomPrimaryButton>
                     </SideBar>
                     <ChatWorkspace>
-                        {!this.state.hasPrivateKey ? (
-                            'Loading Virgil Credentials'
-                        ) : this.state.currentChannel ? (
+                        {this.props.store.currentChannel ? (
                             <React.Fragment>
-                                <Messages messages={this.state.messages} />
-                                <MessageField handleSend={this.model.sendMessage} />
+                                <Messages messages={this.props.store.messages} />
+                                <MessageField handleSend={this.sendMessage} />
                             </React.Fragment>
                         ) : (
-                            'Please Select Channel'
+                            'Select Channel First'
                         )}
                     </ChatWorkspace>
                 </ChatLayout>

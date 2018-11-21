@@ -1,8 +1,8 @@
 import * as React from 'react';
 import styled from 'styled-components';
 import { Avatar } from './Primitives';
-import { IMessage } from './Messages';
 import format from 'date-fns/format';
+import { IMessage } from '../models/MessageListModel';
 
 const MessageContainer = styled.div`
     width: 100%;

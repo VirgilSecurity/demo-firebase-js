@@ -5,16 +5,26 @@ import { PrimaryButton } from './Primitives';
 import styled from 'styled-components';
 
 const Buttons = styled.div`
+    margin-top: 20px;
     display: flex;
     justify-content: space-between;
 `;
 
+const LoadingContainer = styled.div`
+    width: 100%;
+    text-align: center;
+`
+
 export interface IAuthFormValues {
     username: string;
     password: string;
+    brainkeyPassword: string;
 }
 
-type formikSubmit = (values: IAuthFormValues, actions: FormikActions<IAuthFormValues>) => void;
+type formikSubmit = (
+    values: IAuthFormValues,
+    actions: FormikActions<IAuthFormValues>,
+) => Promise<void>;
 
 export interface IAuthFormProps {
     onSignIn: formikSubmit;
@@ -23,16 +33,24 @@ export interface IAuthFormProps {
 
 export interface IAuthFormState {
     isSingInClicked: boolean;
+    isMultiDeviceSupportEnabled: boolean;
+    isLoading: boolean;
 }
 
 export default class AuthForm extends React.Component<IAuthFormProps, IAuthFormState> {
-    state = { isSingInClicked: false };
+    state = { isSingInClicked: false, isMultiDeviceSupportEnabled: false, isLoading: false };
 
     validateForm = (values: IAuthFormValues) => {
         let errors: FormikErrors<IAuthFormValues> = {};
-        if (!/^[a-zA-Z0-9._]+$/.test(values.username)) {
-            errors.username = 'only latin symbols, numbers, dot and underscore allowed';
+
+        if (values.password === '' || values.password == null) {
+            errors.password = 'required';
         }
+
+        if (values.brainkeyPassword === '' || values.brainkeyPassword == null) {
+            errors.brainkeyPassword = 'required';
+        }
+
 
         return errors;
     };
@@ -41,7 +59,7 @@ export default class AuthForm extends React.Component<IAuthFormProps, IAuthFormS
         const error =
             form.touched.username && form.errors.username ? (form.errors.username as string) : null;
 
-        return <InputField label="username" error={error} {...field} />;
+        return <InputField label="email" error={error} {...field} />;
     };
 
     renderPasswordInput = ({ field, form }: FieldProps<IAuthFormValues>) => {
@@ -50,28 +68,34 @@ export default class AuthForm extends React.Component<IAuthFormProps, IAuthFormS
         return <InputField label="password" type="password" error={error} {...field} />;
     };
 
-    renderForm = ({ values, isValid }: FormikProps<IAuthFormValues>) => {
-        const isDisabled = values.username === '' || values.password === '' || !isValid;
+    renderBrainKeyPasswordInput = ({ field, form }: FieldProps<IAuthFormValues>) => {
+        const error =
+            form.touched.brainkeyPassword && form.errors.brainkeyPassword
+                ? (form.errors.brainkeyPassword as string)
+                : null;
+        return <InputField label="private key password" type="password" error={error} {...field} />;
+    };
+
+    onSubmit: formikSubmit = (values, actions) => {
+        this.setState({ isLoading: true });
+        let promise;
+        if (this.state.isSingInClicked) {
+            promise = this.props.onSignIn(values, actions);
+        } else {
+            promise = this.props.onSignUp(values, actions);
+        }
+
+        return promise
+            .catch(() => this.setState({ isLoading: false }));
+    };
+
+    renderForm = ({ isValid }: FormikProps<IAuthFormValues>) => {
         return (
             <Form>
                 <Field name="username" render={this.renderEmailInput} />
                 <Field name="password" render={this.renderPasswordInput} />
-                <Buttons>
-                    <PrimaryButton
-                        disabled={isDisabled}
-                        type="submit"
-                        onClick={() => this.setState({ isSingInClicked: true })}
-                    >
-                        Sign In
-                    </PrimaryButton>
-                    <PrimaryButton
-                        disabled={isDisabled}
-                        type="submit"
-                        onClick={() => this.setState({ isSingInClicked: false })}
-                    >
-                        Sign Up
-                    </PrimaryButton>
-                </Buttons>
+                <Field name="brainkeyPassword" render={this.renderBrainKeyPasswordInput} />
+                {this.state.isLoading ? this.renderLoading() : this.renderButtons(isValid)}
             </Form>
         );
     };
@@ -80,10 +104,35 @@ export default class AuthForm extends React.Component<IAuthFormProps, IAuthFormS
         return (
             <Formik
                 validate={this.validateForm}
-                initialValues={{ username: '', password: '' }}
-                onSubmit={this.state.isSingInClicked ? this.props.onSignIn : this.props.onSignUp}
+                initialValues={{ username: '', password: '', brainkeyPassword: '' }}
+                onSubmit={this.onSubmit}
                 render={this.renderForm}
             />
         );
+    }
+
+    private renderButtons = (isValid: boolean) => {
+        return (
+            <Buttons>
+                <PrimaryButton
+                    disabled={!isValid}
+                    type="submit"
+                    onClick={() => this.setState({ isSingInClicked: true })}
+                >
+                    Sign In
+                </PrimaryButton>
+                <PrimaryButton
+                    disabled={!isValid}
+                    type="submit"
+                    onClick={() => this.setState({ isSingInClicked: false })}
+                >
+                    Sign Up
+                </PrimaryButton>
+            </Buttons>
+        );
+    };
+
+    private renderLoading = () => {
+        return <LoadingContainer>loading</LoadingContainer>
     }
 }

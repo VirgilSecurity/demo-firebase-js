@@ -1,70 +1,46 @@
-import AppState from './AppState';
+import AppStore from './AppState';
 import firebase from 'firebase';
 import ChannelListModel from './ChannelListModel';
 import { IChannel } from './ChannelModel';
-import VirgilApi from '../services/VirgilApi';
+import { EThree } from '@virgilsecurity/e3kit';
 
 export class ChatModel {
-    state = new AppState();
-    channelsList = new ChannelListModel(this.username, this.virgilApi);
+    channelsList: ChannelListModel;
 
     channelsListener?: firebase.Unsubscribe;
     messageListener?: firebase.Unsubscribe;
-
-    constructor(public username: string, public virgilApi: VirgilApi) {
+    
+    constructor(public store: AppStore, username: string, virgilE2ee: EThree) {
+        this.store.setState({ username: username });
+        this.channelsList = new ChannelListModel(username, virgilE2ee);
         this.listenChannels(username);
-        this.state.setState({ username });
-        this.virgilApi.privateKey
-            .then(_privateKey => {
-                this.state.setState({ hasPrivateKey: true });
-            })
-            .catch(error => {
-                const errorMessage = `Failed to load user private key:
-${error ? error.message : 'Unknown error'}
-Please try to reload page. If problem not solved, please contact support
-`
-                this.state.setState({ error: errorMessage });
-            });
-
-        this.virgilApi.publicKeys
-            .catch(error => {
-                const errorMessage = `Failed to load user public keys:
-${error ? error.message : 'Unknown error'}
-Please try to reload page. If problem not solved, please contact support
-`
-                this.state.setState({ error: errorMessage });
-            });
     }
 
     sendMessage = async (message: string) => {
-        if (!this.state.store.currentChannel) throw Error('set channel first');
-        const currentChannel = this.channelsList.getChannel(this.state.store.currentChannel.id);
-        try {
-            await currentChannel.sendMessage(message);
-        } catch (error) {
-            this.state.setState({ error });
-        }
+        if (!this.store.state.currentChannel) throw Error('set channel first');
+        const currentChannel = this.channelsList.getChannel(this.store.state.currentChannel.id);
+ 
+        return await currentChannel.sendMessage(message);
     };
 
     listenMessages = async (channel: IChannel) => {
         if (this.messageListener) this.messageListener();
         const channelModel = this.channelsList.getChannel(channel.id);
-        this.state.setState({ currentChannel: channel, messages: [] });
+        this.store.setState({ currentChannel: channel, messages: [] });
         this.messageListener = channelModel.listenMessages(messages =>
-            this.state.setState({ messages }),
+            this.store.setState({ messages }),
         );
     };
 
     unsubscribe() {
         if (this.channelsListener) this.channelsListener();
         if (this.messageListener) this.messageListener();
-        this.state.removeAllListeners();
     }
 
     private async listenChannels(username: string) {
         if (this.channelsListener) this.channelsListener();
         this.channelsListener = this.channelsList.listenUpdates(username, channels =>
-            this.state.setState({ channels }),
+            this.store.setState({ channels }),
         );
     }
 }

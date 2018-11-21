@@ -1,19 +1,32 @@
-import EventEmitter from "wolfy87-eventemitter";
-import { IChatPageState } from "../components/ChatWindow";
+import ChannelModel, { IChannel } from './ChannelModel';
+import { IMessage } from './MessageListModel';
+import ChatModel from './ChatModel';
 
-export default class AppState extends EventEmitter {
+export interface IAppStore {
+    chatModel: null | ChatModel;
+    error: null | Error | string;
+    username: string | null;
+    channels: ChannelModel[];
+    messages: IMessage[];
+    currentChannel: IChannel | null;
+}
 
-    store: IChatPageState = {
+export default class AppStore {
+    defaultState: IAppStore = {
         error: null,
         username: null,
-        hasPrivateKey: false,
         currentChannel: null,
         channels: [],
         messages: [],
+        chatModel: null,
+    };
+
+    get state() {
+        return this.stateLink();
     }
 
-    setState(state: Partial<IChatPageState>) {
-        const newState = Object.assign(this.store, state);
-        this.emit('change', newState);
+    // tslint:disable-next-line:no-any
+    constructor(public setState: any, private stateLink: () => IAppStore) {
+
     }
 }
