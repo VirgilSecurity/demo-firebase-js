@@ -37,9 +37,7 @@ class UserApi {
                     const getToken = () => user.getIdToken().then(fetchToken);
 
                     this.eThree = EThree.initialize(getToken);
-
                     this.eThree.then(resolve).catch(reject);
-                        this.eThree.then(eThree => this.createChatModel(user.email!, eThree));
                 } else {
                     this.state.setState(state.defaultState);
                     this.eThree.then(eThree => eThree.cleanup());                    
@@ -53,24 +51,37 @@ class UserApi {
 
         const userInfo = await firebase.auth().createUserWithEmailAndPassword(email, password);
 
+        const eThree = await this.eThree;
+
+        try {
+            await eThree.register();
+            await eThree.backupPrivateKey(brainkeyPassword);
         await this.collectionRef.doc(email).set({
             createdAt: new Date(),
             uid: userInfo.user!.uid,
             channels: [],
         });
-        const eThree = await this.eThree;
-        await eThree.register();
-        await eThree.backupPrivateKey(brainkeyPassword);
+            this.createChatModel(email, eThree);
+        } catch (error) {
+            await userInfo.user!.delete();
+            console.error(error);
+            throw error;
+        }
     }
 
     async signIn(email: string, password: string, brainkeyPassword: string) {
         email = email.toLocaleLowerCase();
 
         await firebase.auth().signInWithEmailAndPassword(email, password);
-
         const eThree = await this.eThree;
         const hasPrivateKey = await eThree.hasLocalPrivateKey();
+        try {
         if (!hasPrivateKey) await eThree.restorePrivateKey(brainkeyPassword);
+            this.createChatModel(email, eThree);
+        } catch (e) {
+            firebase.auth().signOut();
+            throw e;
+        }
     }
 
     private async createChatModel(email: string, eThree: EThree) {
