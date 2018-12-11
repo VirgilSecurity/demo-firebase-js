@@ -9,26 +9,26 @@ export type AuthHandler = (client: EThree | null) => void;
 const FIREBASE_FUNCTION_URL = 'https://YOUR_FIREBASE_ENDPOINT.cloudfunctions.net/api';
 const ENDPOINT = `${FIREBASE_FUNCTION_URL}/virgil-jwt`;
 
-const getTokenFromFetchResponse = (res: Response) => {
-    return res.ok
-        ? res.json().then((data: { token: string }) => data.token)
-        : Promise.reject(new Error('Error in getJWT with code: ' + res.status));
-}
-
-const fetchToken = (token: string) => fetch(
+async function fetchToken(authToken: string) {
+    const response = await fetch(
     ENDPOINT,
     {
         headers: new Headers({
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${authToken}`,
         })
     },
-).then(getTokenFromFetchResponse);
+    );
+    if (!response.ok) {
+        throw `Error code: ${response.status} \nMessage: ${response.statusText}`;
+    }
+    return response.json().then(data => data.token);
+};
+
 
 class UserApi {
     collectionRef = firebase.firestore().collection(FirebaseCollections.Users);
     eThree: Promise<EThree>;
-    isManualLogin: boolean = false;
 
     constructor(public state: AppStore) {
         this.eThree = new Promise((resolve, reject) => {
@@ -39,58 +39,43 @@ class UserApi {
                     this.eThree = EThree.initialize(getToken);
 
                     this.eThree.then(resolve).catch(reject);
-                    
-                    if (!this.isManualLogin) {
                         this.eThree.then(eThree => this.createChatModel(user.email!, eThree));
-                        this.isManualLogin = false;
-                    }
                 } else {
-                    this.eThree.then(sdk => sdk.cleanup());
                     this.state.setState(state.defaultState);
+                    this.eThree.then(eThree => eThree.cleanup());                    
                 }
             });
         });
     }
 
     async signUp(email: string, password: string, brainkeyPassword: string) {
-        this.isManualLogin = true;
         email = email.toLocaleLowerCase();
-        let userInfo: firebase.auth.UserCredential;
-        this.isManualLogin = true;
-        try {
-            userInfo = await firebase.auth().createUserWithEmailAndPassword(email, password);
 
-            this.state.setState({ username: email });
-        } catch (e) {
-            throw e;
-        }
+        const userInfo = await firebase.auth().createUserWithEmailAndPassword(email, password);
 
-        this.collectionRef.doc(email).set({
+        await this.collectionRef.doc(email).set({
             createdAt: new Date(),
             uid: userInfo.user!.uid,
             channels: [],
         });
         const eThree = await this.eThree;
-        return await eThree
-            .bootstrap(brainkeyPassword)
-            .then(() => this.createChatModel(email, eThree));
+        await eThree.register();
+        await eThree.backupPrivateKey(brainkeyPassword);
     }
 
-    async signIn(username: string, password: string, brainkeyPassword: string) {
-        this.isManualLogin = true;
-        username = username.toLocaleLowerCase();
+    async signIn(email: string, password: string, brainkeyPassword: string) {
+        email = email.toLocaleLowerCase();
 
-        await firebase.auth().signInWithEmailAndPassword(username, password);
-
-        this.state.setState({ username: username });
+        await firebase.auth().signInWithEmailAndPassword(email, password);
 
         const eThree = await this.eThree;
-        await eThree.bootstrap(brainkeyPassword).then(() => this.createChatModel(username, eThree));
+        const hasPrivateKey = await eThree.hasLocalPrivateKey();
+        if (!hasPrivateKey) await eThree.restorePrivateKey(brainkeyPassword);
     }
 
-    async createChatModel(username: string, eThree: EThree) {
-        const chatModel = new ChatModel(this.state, username, eThree);
-        this.state.setState({ chatModel });
+    private async createChatModel(email: string, eThree: EThree) {
+        const chatModel = new ChatModel(this.state, email, eThree);
+        this.state.setState({ chatModel, email });
     }
 }
 

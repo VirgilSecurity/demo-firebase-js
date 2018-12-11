@@ -5,7 +5,7 @@ import ChatModel from './ChatModel';
 export interface IAppStore {
     chatModel: null | ChatModel;
     error: null | Error | string;
-    username: string | null;
+    email: string | null;
     channels: ChannelModel[];
     messages: IMessage[];
     currentChannel: IChannel | null;
@@ -14,7 +14,7 @@ export interface IAppStore {
 export default class AppStore {
     defaultState: IAppStore = {
         error: null,
-        username: null,
+        email: null,
         currentChannel: null,
         channels: [],
         messages: [],
