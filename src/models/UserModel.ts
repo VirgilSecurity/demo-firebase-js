@@ -31,15 +31,21 @@ class UserApi {
     eThree: Promise<EThree>;
 
     constructor(public state: AppStore) {
+        // here we will keep link to promise with initialized e3kit library
         this.eThree = new Promise((resolve, reject) => {
-            firebase.auth().onAuthStateChanged(user => {
+            firebase.auth().onAuthStateChanged(async user => {
                 if (user) {
                     const getToken = () => user.getIdToken().then(fetchToken);
-
+                    // callback onAuthStateChanged can be called with second user, so we make new
+                    // reference to e3kit
                     this.eThree = EThree.initialize(getToken);
                     this.eThree.then(resolve).catch(reject);
+                    const eThree = await this.eThree;
+                    // if user has private key locally, then he didn't logout 
+                    if (await eThree.hasLocalPrivateKey()) this.openChatWindow(user.email!, eThree)
                 } else {
                     this.state.setState(state.defaultState);
+                    // cleanup private key on logout
                     this.eThree.then(eThree => eThree.cleanup());                    
                 }
             });
@@ -61,7 +67,7 @@ class UserApi {
             uid: userInfo.user!.uid,
             channels: [],
         });
-            this.createChatModel(email, eThree);
+            this.openChatWindow(email, eThree);
         } catch (error) {
             await userInfo.user!.delete();
             console.error(error);
@@ -77,14 +83,14 @@ class UserApi {
         const hasPrivateKey = await eThree.hasLocalPrivateKey();
         try {
         if (!hasPrivateKey) await eThree.restorePrivateKey(brainkeyPassword);
-            this.createChatModel(email, eThree);
+            this.openChatWindow(email, eThree);
         } catch (e) {
             firebase.auth().signOut();
             throw e;
         }
     }
 
-    private async createChatModel(email: string, eThree: EThree) {
+    async openChatWindow(email: string, eThree: EThree) {
         const chatModel = new ChatModel(this.state, email, eThree);
         this.state.setState({ chatModel, email });
     }

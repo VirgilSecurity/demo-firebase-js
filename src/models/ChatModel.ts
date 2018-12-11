@@ -10,10 +10,9 @@ export class ChatModel {
     channelsListener?: firebase.Unsubscribe;
     messageListener?: firebase.Unsubscribe;
     
-    constructor(public store: AppStore, username: string, virgilE2ee: EThree) {
-        this.store.setState({ username: username });
-        this.channelsList = new ChannelListModel(username, virgilE2ee);
-        this.listenChannels(username);
+    constructor(public store: AppStore, public email: string, virgilE2ee: EThree) {
+        this.channelsList = new ChannelListModel(email, virgilE2ee);
+        this.listenChannels(email);
     }
 
     sendMessage = async (message: string) => {
