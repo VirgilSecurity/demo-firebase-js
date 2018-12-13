@@ -73,7 +73,7 @@ export default class AuthForm extends React.Component<IAuthFormProps, IAuthFormS
             form.touched.brainkeyPassword && form.errors.brainkeyPassword
                 ? (form.errors.brainkeyPassword as string)
                 : null;
-        return <InputField label="private key password" type="password" error={error} {...field} />;
+        return <InputField label="backup key password" type="password" error={error} {...field} />;
     };
 
     onSubmit: formikSubmit = (values, actions) => {
