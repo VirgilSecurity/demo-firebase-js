@@ -97,7 +97,7 @@ export default class ChatPage extends React.Component<IChatPageProps> {
                         Virgilgram
                     </LinkButton>
                     <RightSide>
-                        {this.props.store.username}
+                        {this.props.store.email}
                         <LinkButton color="white" onClick={this.props.signOut}>
                             logout
                         </LinkButton>
@@ -107,7 +107,7 @@ export default class ChatPage extends React.Component<IChatPageProps> {
                     <SideBar>
                         <Channels
                             onClick={this.selectChannel}
-                            username={this.props.store.username!}
+                            username={this.props.store.email!}
                             channels={this.props.store.channels}
                         />
                         <BottomPrimaryButton onClick={this.createChannel}>
