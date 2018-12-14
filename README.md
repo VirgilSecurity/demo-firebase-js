@@ -1,9 +1,6 @@
-# End-to-end encrypted, HIPAA-compliant JavaScript chat app for Firebase.
-You can reuse this sample in any projects where you want to end-to-end protect user data, documents, images using Virgil's end-to-end encryption. [HIPAA whitepaper](https://virgilsecurity.com/wp-content/uploads/2018/07/Firebase-HIPAA-Chat-Whitepaper-Virgil-Security.pdf).
+# End-to-end encrypted, HIPAA-compliant JavaScript demo chat app for Firebase.
 
-[Watch JS setup tutorial on YouTube](https://youtu.be/Xddrwqhg4LY)
-
-* Looking for other client platforms? [iOS](https://github.com/VirgilSecurity/demo-firebase-ios) | [Android](https://github.com/VirgilSecurity/demo-firebase-android)
+You can reuse this sample in any your projects to protect user data, documents, images using Virgil's end-to-end encryption [HIPAA whitepaper](https://virgilsecurity.com/wp-content/uploads/2018/07/Firebase-HIPAA-Chat-Whitepaper-Virgil-Security.pdf).
 
 ## Prerequisites
 
@@ -17,7 +14,9 @@ cd demo-firebase-js
 ```
 
 ## Connect your Virgil and Firebase accounts
-In order for the app to work, you need to deploy a Firebase function that gives out Virgil JWT tokens for your authenticated users. You'll also need to create a Firestore database with a specific rule set.
+To connect your Virgil and Firebase accounts for implementing end-to-end encryption to deploy a Firebase function that gives out Virgil JWT tokens for your authenticated users.
+
+To deploy the function, head over to our GitHub repo and follow the instructions in README:
 
 * **[Follow instructions here](https://github.com/VirgilSecurity/e3kit-firebase-func)**
 
@@ -41,7 +40,7 @@ In order for the app to work, you need to deploy a Firebase function that gives 
   ```
 * Click **PUBLISH**.
 
-> You only need to do this once - if you did it already earlier or for your Android or iOS apps, don't need to do it again. 
+> You only need to do this once - if you did it already earlier or for your Android or iOS apps, don't need to do it again.
 
 ## Add your Firebase function URL and Firebase project config to app
 
@@ -75,6 +74,6 @@ In order for the app to work, you need to deploy a Firebase function that gives 
 
 * **Browse to http://localhost:1234**
 
-> Start a **second incognito window** to have 2 chat apps running with 2 different users
+* Start a **second incognito window** to have 2 chat apps running with 2 different users
 
 > Remember, the app deletes messages right after delivery (it's a HIPAA requirement to meet the conduit exception). If you want to see encrypted messages in your Firestore database, run only 1 browser instance, send a message to your chat partner and check Firestore DB's contents before opening the other user's app to receive the message. If you don't want to implement this behavior in your own app, you can remove it from this sample [here](https://github.com/VirgilSecurity/demo-firebase-js/blob/d263f0ddd4f92f51ee2a925cdffd32a19a0387ae/src/models/MessageListModel.ts#L34).

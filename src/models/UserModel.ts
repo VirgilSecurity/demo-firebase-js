@@ -6,7 +6,7 @@ import ChatModel from './ChatModel';
 
 export type AuthHandler = (client: EThree | null) => void;
 
-const FIREBASE_FUNCTION_URL = 'https://YOUR_FIREBASE_ENDPOINT.cloudfunctions.net/api';
+const FIREBASE_FUNCTION_URL = 'https://us-central1-my-project-8cd83.cloudfunctions.net/api';
 const ENDPOINT = `${FIREBASE_FUNCTION_URL}/virgil-jwt`;
 
 async function fetchToken(authToken: string) {
@@ -41,12 +41,12 @@ class UserApi {
                     this.eThree = EThree.initialize(getToken);
                     this.eThree.then(resolve).catch(reject);
                     const eThree = await this.eThree;
-                    // if user has private key locally, then he didn't logout 
+                    // if user has private key locally, then he didn't logout
                     if (await eThree.hasLocalPrivateKey()) this.openChatWindow(user.email!, eThree)
                 } else {
                     this.state.setState(state.defaultState);
                     // cleanup private key on logout
-                    this.eThree.then(eThree => eThree.cleanup());                    
+                    this.eThree.then(eThree => eThree.cleanup());
                 }
             });
         });
