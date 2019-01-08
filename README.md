@@ -2,6 +2,8 @@
 
 You can reuse this sample in any your projects to protect user data, documents, images using Virgil's end-to-end encryption [HIPAA whitepaper](https://virgilsecurity.com/wp-content/uploads/2018/07/Firebase-HIPAA-Chat-Whitepaper-Virgil-Security.pdf).
 
+**This Demo is based on [Virgil E3Kit JS SDK](https://github.com/VirgilSecurity/virgil-e3kit-js).**
+
 ## Prerequisites
 
 * [node v8.11.3](https://nodejs.org/en/download) or later
