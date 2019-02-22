@@ -93,7 +93,7 @@ export default class ChannelListModel {
     private getChannelId(username1: string, username2: string) {
         // Make hash of users the same independently of usernames order
         const combination = username1 > username2 ? username1 + username2 : username1 + username2;
-        return base64UrlFromBase64(this.e3kit.toolbox.virgilCrypto
+        return base64UrlFromBase64(this.e3kit.virgilCrypto
             .calculateHash(combination)
             .toString('base64'));
     }
