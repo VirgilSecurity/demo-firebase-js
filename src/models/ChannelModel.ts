@@ -32,10 +32,7 @@ export default class ChannelModel implements IChannel {
         this.count = count;
         this.members = members;
         this.messageStorage = new MessageStorage(this.id);
-        this.channelStorageRef = firebase
-            .storage()
-            .ref()
-            .child(this.id);
+        this.channelStorageRef = firebase.storage().ref();
 
         this.publicKeys = virgilE2ee.lookupPublicKeys([this.receiver.uid, this.sender.uid]);
 
@@ -59,12 +56,19 @@ export default class ChannelModel implements IChannel {
         return member;
     }
 
+    uploadFile(filename: string, file: Blob) {
+        return this.channelStorageRef.child(`${this.id}/${filename}`).put(file);
+    }
+
     async sendMessage() {
         const encryptedMessage = await this.currentMessage.encrypt(this.virgilE2ee);
 
         firebase.firestore().runTransaction(async transaction => {
-            await this.updateMessage(transaction, encryptedMessage.body);
-            this.currentMessage = new DecryptedMessage( { sender: this.sender.username, receiver: this.receiver.username }, this);
+            await this.updateMessage(transaction, encryptedMessage);
+            this.currentMessage = new DecryptedMessage(
+                { sender: this.sender.username, receiver: this.receiver.username },
+                this,
+            );
         });
     }
 
@@ -78,19 +82,22 @@ export default class ChannelModel implements IChannel {
                     .docChanges()
                     .filter(messageSnapshot => messageSnapshot.type === 'added')
                     .map(e => EncryptedMessage.fromSnapshot(e.doc, this, this.virgilE2ee));
-
                 const decryptedMessages = await Promise.all(loadedMessages.map(m => m.decrypt()));
+                console.log('decryptedMessages', decryptedMessages);
                 const messages = decryptedMessages.map(m => m.toJSON()) as IMessage[];
+                console.log('messages', messages);
+
                 const restoredMessages = this.messageStorage
                     .addMessages(messages)
                     .map(m => DecryptedMessage.fromJSON(m, this));
+                console.log('restored messages', restoredMessages)
                 cb(restoredMessages);
             });
     }
 
     private updateMessage = async (
         transaction: firebase.firestore.Transaction,
-        message: string,
+        message: EncryptedMessage,
     ) => {
         const channelRef = ChannelListModel.channelCollectionRef.doc(this.id);
         const snapshot = await transaction.get(channelRef);
@@ -102,10 +109,11 @@ export default class ChannelModel implements IChannel {
         if (snapshot.exists) {
             transaction.update(channelRef, { count: ++messagesCount });
             transaction.set(messagesCollectionRef, {
-                body: message,
+                body: message.body,
                 createdAt: new Date(),
                 sender: this.sender.username,
                 receiver: this.receiver.username,
+                attachment: message.attachment,
             });
         }
 

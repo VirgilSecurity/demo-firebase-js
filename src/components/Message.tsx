@@ -2,7 +2,7 @@ import * as React from 'react';
 import styled from 'styled-components';
 import { Avatar } from './Primitives';
 import format from 'date-fns/format';
-import { IMessage } from '../models/MessageListModel';
+import { DecryptedMessage } from '../models/MessageModel';
 
 const MessageContainer = styled.div`
     width: 100%;
@@ -33,13 +33,17 @@ const MessageAvatar = Avatar.extend`
     flex: 0 0 auto;
 `
 
+const ChatImg = styled.img`
+    max-height: 200px;
+    max-width: 100%;
+`;
+
 
 export interface IMessageProps {
-    message: IMessage;
+    message: DecryptedMessage;
 }
 
 export default function Message({ message }: IMessageProps) {
-    console.log('message', message);
     return (
         <MessageContainer>
             <MessageAvatar>{message.sender.slice(0, 2).toUpperCase()}</MessageAvatar>
@@ -49,6 +53,7 @@ export default function Message({ message }: IMessageProps) {
                     <span>{format(message.createdAt, 'HH:mm:ss')}</span>
                 </MessageHeader>
                 <MessageBody>{message.body === '' ? '*Message Deleted*' : message.body}</MessageBody>
+                {message.attachment && <p><ChatImg src={message.attachment} /></p>}
             </MessageContent>
         </MessageContainer>
     );

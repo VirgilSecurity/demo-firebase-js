@@ -1,4 +1,3 @@
-import { IMessage } from './MessageListModel';
 import { EThree } from '@virgilsecurity/e3kit';
 import ChannelModel from './ChannelModel';
 import firebase from 'firebase';
@@ -9,6 +8,7 @@ export interface IMessage {
     createdAt: Date;
     receiver: string;
     sender: string;
+    attachment?: string;
 }
 
 export interface IDecryptedMessageProps {
@@ -34,6 +34,7 @@ export interface IMessageData {
     sender: string;
     receiver: string;
     createdAt: firebase.firestore.Timestamp;
+    attachment?: string;
 }
 
 export class DecryptedMessage {
@@ -46,12 +47,13 @@ export class DecryptedMessage {
 
     static fromSnapshot(
         snapshot: firebase.firestore.QueryDocumentSnapshot,
-        channel: ChannelModel
+        channel: ChannelModel,
     ): DecryptedMessage {
-        const { createdAt, body, sender, receiver } = snapshot.data() as IMessageData;
+        const { createdAt, body, sender, receiver, attachment } = snapshot.data() as IMessageData;
+        console.log('snapshot.data()', snapshot.data())
         const message = new DecryptedMessage(
-            { body, createdAt: createdAt.toDate(), id: snapshot.id, sender, receiver },
-            channel
+            { body, createdAt: createdAt.toDate(), id: snapshot.id, sender, receiver, attachment },
+            channel,
         );
         return message;
     }
@@ -62,13 +64,14 @@ export class DecryptedMessage {
     }
 
     constructor(
-        { sender, receiver, body, createdAt, id }: IDecryptedMessageProps,
+        { sender, receiver, body, createdAt, id, attachment }: IDecryptedMessageProps,
         private channel: ChannelModel,
     ) {
         this.id = id;
         this.body = body;
         this.receiver = receiver;
         this.sender = sender;
+        this.attachment = attachment;
         if (createdAt) this.createdAt = createdAt;
     }
 
@@ -81,12 +84,14 @@ export class DecryptedMessage {
         return new EncryptedMessage({ ...this, body: message }, this.channel, eThree);
     }
 
-    async send() {
+    async send(message: string, attachment?: string) {
+        this.body = message;
+        this.attachment = attachment;
         this.channel.sendMessage();
     }
 
     toJSON(): IMessage {
-        const { id, body } = this
+        const { id, body } = this;
         if (!body) throw new Error('no body');
         if (!id) throw new Error('message not saved');
         return {
@@ -94,8 +99,36 @@ export class DecryptedMessage {
             body: body,
             createdAt: this.createdAt,
             sender: this.sender,
-            receiver: this.receiver
-        }
+            receiver: this.receiver,
+            attachment: this.attachment
+        };
+    }
+
+    addAttachment(
+        file: Blob,
+        onProgress: (percent: number) => void,
+    ): Promise<string> {
+        const filename = Date.now().toString();
+        const uploadTask = this.channel.uploadFile(filename, file);
+
+        return new Promise((resolve, reject) => {
+            uploadTask.on(
+                'state_changed',
+                snapshot => {
+                    const progress = Math.round(
+                        (snapshot.bytesTransferred / snapshot.totalBytes) * 100,
+                    );
+                    onProgress(progress);
+                },
+                error => reject(error),
+                () => {
+                    uploadTask.snapshot.ref.getDownloadURL().then(url => {
+                        this.attachment = url;
+                        resolve(url);
+                    });
+                }
+            );
+        });
     }
 }
 
@@ -112,6 +145,7 @@ export class EncryptedMessage {
         channel: ChannelModel,
         eThree: EThree,
     ): EncryptedMessage {
+
         return new EncryptedMessage(
             {
                 id: snapshot.id,
@@ -124,7 +158,7 @@ export class EncryptedMessage {
     }
 
     constructor(
-        { id, body, createdAt, receiver, sender }: IEncryptedMessageProps,
+        { id, body, createdAt, receiver, sender, attachment }: IEncryptedMessageProps,
         private channel: ChannelModel,
         private eThree: EThree,
     ) {
@@ -133,6 +167,7 @@ export class EncryptedMessage {
         this.createdAt = createdAt;
         this.receiver = receiver;
         this.sender = sender;
+        this.attachment = attachment;
     }
 
     async decrypt(): Promise<DecryptedMessage> {
