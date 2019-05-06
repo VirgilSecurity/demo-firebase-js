@@ -5,6 +5,7 @@ import { IChannel } from './ChannelModel';
 import { EThree } from '@virgilsecurity/e3kit';
 
 export class ChatModel {
+    storageRef = firebase.storage().ref();
     channelsList: ChannelListModel;
 
     channelsListener?: firebase.Unsubscribe;
@@ -15,12 +16,16 @@ export class ChatModel {
         this.listenChannels(email);
     }
 
-    sendMessage = async (message: string) => {
+    sendMessage = async () => {
         if (!this.store.state.currentChannel) throw Error('set channel first');
         const currentChannel = this.channelsList.getChannel(this.store.state.currentChannel.id);
  
-        return await currentChannel.sendMessage(message);
+        return await currentChannel.sendMessage();
     };
+
+    sendFile = async (file: Blob) => {
+        this.storageRef.put(file)
+    }
 
     listenMessages = async (channel: IChannel) => {
         if (this.messageListener) this.messageListener();

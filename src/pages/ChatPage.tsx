@@ -32,7 +32,7 @@ export default class ChatPage extends React.Component<IChatPageProps> {
 
     sendMessage = async (message: string) => {
         try {
-            await this.props.model.sendMessage(message)
+            await this.props.model.sendMessage()
         } catch (e) {
             alert(e);
         }
@@ -71,7 +71,7 @@ export default class ChatPage extends React.Component<IChatPageProps> {
                         {this.props.store.currentChannel ? (
                             <React.Fragment>
                                 <Messages messages={this.props.store.messages} />
-                                <MessageField handleSend={this.sendMessage} />
+                                <MessageField message={this.props.store.currentChannel.currentMessage} handleSend={this.sendMessage}  />
                             </React.Fragment>
                         ) : (
                             'Select Channel First'

@@ -39,6 +39,7 @@ export interface IMessageProps {
 }
 
 export default function Message({ message }: IMessageProps) {
+    console.log('message', message);
     return (
         <MessageContainer>
             <MessageAvatar>{message.sender.slice(0, 2).toUpperCase()}</MessageAvatar>

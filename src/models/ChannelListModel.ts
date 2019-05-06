@@ -26,6 +26,7 @@ export default class ChannelListModel {
             );
 
             const channels = channelsRefs.map(this.getChannelFromSnapshot);
+            console.log('channel', channels);
             this.channels = channels.map(
                 channel => new ChannelModel(channel, senderUsername, this.e3kit),
             );

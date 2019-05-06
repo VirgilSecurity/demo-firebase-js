@@ -1,4 +1,4 @@
-import ChannelModel, { IChannel } from './ChannelModel';
+import ChannelModel from './ChannelModel';
 import { IMessage } from './MessageListModel';
 import ChatModel from './ChatModel';
 
@@ -7,7 +7,7 @@ export interface IAppStore {
     error: null | Error | string;
     channels: ChannelModel[];
     messages: IMessage[];
-    currentChannel: IChannel | null;
+    currentChannel: ChannelModel | null;
 }
 
 export default class AppStore {

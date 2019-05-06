@@ -1,7 +1,10 @@
-import MessagesListModel, { IMessage } from './MessageListModel';
 import MessageStorage from './MessageStorage';
-import CryptoMessageList from './CryptoMessageList';
-import { EThree } from '@virgilsecurity/e3kit';
+import { EThree, LookupResult } from '@virgilsecurity/e3kit';
+import firebase from 'firebase';
+import ChannelListModel from './ChannelListModel';
+import { FirebaseCollections } from './helpers/FirebaseCollections';
+import { DecryptedMessage, EncryptedMessage } from './MessageModel';
+import { IMessage } from './MessageListModel';
 
 export interface IChannel {
     id: string;
@@ -9,15 +12,16 @@ export interface IChannel {
     members: ChannelUser[];
 }
 
-export type ChannelUser = { username: string, uid: string };
+export type ChannelUser = { username: string; uid: string };
 
 export default class ChannelModel implements IChannel {
     public id: string;
     public count: number;
     public members: ChannelUser[];
-    // public receiver: ChannelUser;
+    public publicKeys: Promise<LookupResult>;
+    public currentMessage: DecryptedMessage;
+    private channelStorageRef: firebase.storage.Reference;
     private messageStorage: MessageStorage;
-    private encryptedMessageList: CryptoMessageList;
 
     constructor(
         { id, count, members }: IChannel,
@@ -28,32 +32,83 @@ export default class ChannelModel implements IChannel {
         this.count = count;
         this.members = members;
         this.messageStorage = new MessageStorage(this.id);
+        this.channelStorageRef = firebase
+            .storage()
+            .ref()
+            .child(this.id);
 
-        const messageList = new MessagesListModel(this);
+        this.publicKeys = virgilE2ee.lookupPublicKeys([this.receiver.uid, this.sender.uid]);
 
-        this.encryptedMessageList = new CryptoMessageList(messageList, virgilE2ee);
+        this.currentMessage = new DecryptedMessage(
+            { sender: this.sender.username, receiver: this.receiver.username },
+            this,
+        );
     }
 
     get receiver() {
         return this.members.filter(e => e.username !== this.senderUsername)[0];
     }
-    
+
     get sender() {
         return this.members.filter(e => e.username === this.senderUsername)[0];
     }
 
-    async sendMessage(message: string) {
-        try {
-            return this.encryptedMessageList.sendMessage(message);
-        } catch (e) {
-            throw e;
-        }
+    getMember(username: string) {
+        const member = this.members.find(member => member.username === username);
+        if (!member) throw new Error(member + ' is not in channel ' + this.id);
+        return member;
     }
 
-    listenMessages(cb: (messages: IMessage[]) => void) {
-        return this.encryptedMessageList.listenUpdates(this.id, messages => {
-            const allMessages = this.messageStorage.addMessages(messages);
-            cb(allMessages); 
+    async sendMessage() {
+        const encryptedMessage = await this.currentMessage.encrypt(this.virgilE2ee);
+
+        firebase.firestore().runTransaction(async transaction => {
+            await this.updateMessage(transaction, encryptedMessage.body);
+            this.currentMessage = new DecryptedMessage( { sender: this.sender.username, receiver: this.receiver.username }, this);
         });
     }
+
+    listenMessages(cb: (messages: DecryptedMessage[]) => void) {
+        return ChannelListModel.channelCollectionRef
+            .doc(this.id)
+            .collection(FirebaseCollections.Messages)
+            .orderBy('createdAt', 'asc')
+            .onSnapshot(async snapshot => {
+                const loadedMessages = snapshot
+                    .docChanges()
+                    .filter(messageSnapshot => messageSnapshot.type === 'added')
+                    .map(e => EncryptedMessage.fromSnapshot(e.doc, this, this.virgilE2ee));
+
+                const decryptedMessages = await Promise.all(loadedMessages.map(m => m.decrypt()));
+                const messages = decryptedMessages.map(m => m.toJSON()) as IMessage[];
+                const restoredMessages = this.messageStorage
+                    .addMessages(messages)
+                    .map(m => DecryptedMessage.fromJSON(m, this));
+                cb(restoredMessages);
+            });
+    }
+
+    private updateMessage = async (
+        transaction: firebase.firestore.Transaction,
+        message: string,
+    ) => {
+        const channelRef = ChannelListModel.channelCollectionRef.doc(this.id);
+        const snapshot = await transaction.get(channelRef);
+        let messagesCount: number = snapshot.data()!.count;
+        const messagesCollectionRef = channelRef
+            .collection(FirebaseCollections.Messages)
+            .doc(messagesCount.toString());
+
+        if (snapshot.exists) {
+            transaction.update(channelRef, { count: ++messagesCount });
+            transaction.set(messagesCollectionRef, {
+                body: message,
+                createdAt: new Date(),
+                sender: this.sender.username,
+                receiver: this.receiver.username,
+            });
+        }
+
+        return transaction;
+    };
 }

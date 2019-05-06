@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { SecondaryButton } from '../components/Primitives';
+import { DecryptedMessage } from '../models/MessageModel';
 
 export const inputHeight = '100px';
 
@@ -19,6 +20,7 @@ const MessageFieldElement = styled.textarea`
 `;
 
 export interface IMessageFieldProps {
+    message: DecryptedMessage;
     handleSend: (message: string) => void;
 }
 
@@ -36,7 +38,7 @@ export default class MessageField extends React.Component<IMessageFieldProps, IM
         this.props.handleSend(this.state.message);
         this.setState({ message: '' });
     };
-
+    
     handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         this.setState({ message: e.target.value });
     };
@@ -45,7 +47,8 @@ export default class MessageField extends React.Component<IMessageFieldProps, IM
         if (this.state.message.trim() === '') return;
         if (e.keyCode === 13 && !e.ctrlKey) {
             e.preventDefault();
-            this.props.handleSend(this.state.message)
+            this.props.message.body = this.state.message;
+            this.props.message.send();
             this.setState({ message: '' });
         } else if (e.ctrlKey) {
             this.setState(state => ({ message: state.message + '\n' }));
@@ -61,6 +64,7 @@ export default class MessageField extends React.Component<IMessageFieldProps, IM
                     onChange={this.handleMessageChange}
                     onKeyUp={this.handleEnter}
                 />
+                <input type="file" onChange={this.handleUploadFile} />
                 <SecondaryButton disabled={this.state.message.trim() === ''}>send</SecondaryButton>
             </MessageFieldContainer>
         );
