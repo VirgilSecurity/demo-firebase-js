@@ -74,6 +74,8 @@ To deploy the function, head over to our GitHub repo and follow the instructions
   npm run start
   ```
 
+> In case you receive a message like `warning found n vulnerabilities` printed in the console after running the `npm install`, there is a potential security vulnerability in one of the demo's dependencies. Don't worry, this is a normal occurrence and in the majority of cases, is fixed by updating the packages. To install any updates, run the command `npm audit fix`. If some of the vulnerabilities persist after the update, check the results of the `npm audit` to see a detailed report. The report includes instructions on how to act on this information.
+
 * **Browse to http://localhost:1234**
 
 * Start a **second incognito window** to have 2 chat apps running with 2 different users
