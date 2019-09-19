@@ -6,7 +6,7 @@ import ChatModel from './ChatModel';
 
 export type AuthHandler = (client: EThree | null) => void;
 
-const FIREBASE_FUNCTION_URL = 'https://us-central1-my-project-8cd83.cloudfunctions.net/api';
+const FIREBASE_FUNCTION_URL = 'https://YOUR_FIREBASE_ENDPOINT.cloudfunctions.net/api';
 const ENDPOINT = `${FIREBASE_FUNCTION_URL}/virgil-jwt`;
 
 async function fetchToken(authToken: string) {
