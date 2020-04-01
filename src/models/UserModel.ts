@@ -6,26 +6,6 @@ import ChatModel from './ChatModel';
 
 export type AuthHandler = (client: EThree | null) => void;
 
-const FIREBASE_FUNCTION_URL = 'https://YOUR_FIREBASE_ENDPOINT.cloudfunctions.net/api';
-const ENDPOINT = `${FIREBASE_FUNCTION_URL}/virgil-jwt`;
-
-async function fetchToken(authToken: string) {
-    const response = await fetch(
-    ENDPOINT,
-    {
-        headers: new Headers({
-            'Content-Type': 'application/json',
-                Authorization: `Bearer ${authToken}`,
-        })
-    },
-    );
-    if (!response.ok) {
-        throw `Error code: ${response.status} \nMessage: ${response.statusText}`;
-    }
-    return response.json().then(data => data.token);
-};
-
-
 class UserApi {
     collectionRef = firebase.firestore().collection(FirebaseCollections.Users);
     eThree: Promise<EThree>;
@@ -35,10 +15,11 @@ class UserApi {
         this.eThree = new Promise((resolve, reject) => {
             firebase.auth().onAuthStateChanged(async user => {
                 if (user) {
-                    const getToken = () => user.getIdToken().then(fetchToken);
+                    const getVirgilJwt = firebase.functions().httpsCallable('getVirgilJwt');
+                    const initializeFunction = () => getVirgilJwt().then(result => result.data.token);
                     // callback onAuthStateChanged can be called with second user, so we make new
                     // reference to e3kit
-                    this.eThree = EThree.initialize(getToken);
+                    this.eThree = EThree.initialize(initializeFunction);
                     this.eThree.then(resolve).catch(reject);
                     const eThree = await this.eThree;
                     // if user has private key locally, then he didn't logout
