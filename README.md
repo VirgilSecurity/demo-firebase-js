@@ -25,7 +25,7 @@ To deploy the function, head over to our GitHub repo and follow the instructions
 ### Configure Authentication
 
 * Select the **Authentication** panel and then click the **Sign In Method** tab.
-* Choose your authentication method and turn on the **Enable** switch, then follow instructions and click **Save**.
+* Choose your authentication method and turn on the **Done** switch, then follow instructions and click **Save**.
 
 ### Configure Cloud Firestore
 
