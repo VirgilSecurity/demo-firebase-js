@@ -6,7 +6,7 @@ You can reuse this sample in any your projects to protect user data, documents, 
 
 ## Prerequisites
 
-* [node v8.11.3](https://nodejs.org/en/download) or later
+* [node v10](https://nodejs.org/en/download) or later
 * [npm](https://www.npmjs.com/get-npm) or yarn
 
 ## Clone JavaScript project
@@ -25,7 +25,7 @@ To deploy the function, head over to our GitHub repo and follow the instructions
 ### Configure Authentication
 
 * Select the **Authentication** panel and then click the **Sign In Method** tab.
-* Choose your authentication method and turn on the **Enable** switch, then follow instructions and click **Save**.
+* Choose your authentication method and turn on the **Done** switch, then follow instructions and click **Save**.
 
 ### Configure Cloud Firestore
 
@@ -44,14 +44,9 @@ To deploy the function, head over to our GitHub repo and follow the instructions
 
 > You only need to do this once - if you did it already earlier or for your Android or iOS apps, don't need to do it again.
 
-## Add your Firebase function URL and Firebase project config to app
+## Add your Firebase project config to app
 
-* **Copy your new Firebase function's URL**: go to the Firebase console -> your project -> Functions tab and copy your new function's url
-* **Paste it** into FIREBASE_FUNCTION_URL variable in `src/models/UserModel.ts`:
-  ```
-  const FIREBASE_FUNCTION_URL = 'https://YOUR_FIREBASE_ENDPOINT.cloudfunctions.net/api';
-  ```
-* Go back to your project's page in Firebase console, click the **gear icon** -> **Project settings**
+* Go to the Firebase console -> your project's page in Firebase console, click the **gear icon** -> **Project settings**
 * Click **Add app** and choose **"</> Add Firebase to your web app"**
 * Copy **only this part** to the clipboard:
   ```
