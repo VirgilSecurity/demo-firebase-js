@@ -17,7 +17,7 @@
     "date-fns": "^1.29.0",
     "firebase": "^7.13.1",
     "formik": "^1.0.2",
-    "lodash": "^4.17.13",
+    "lodash": "^4.17.19",
     "normalize.css": "^8.0.0",
     "react": "^16.4.1",
     "react-dom": "^16.4.2",
