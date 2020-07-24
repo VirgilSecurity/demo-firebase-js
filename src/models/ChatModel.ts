@@ -2,7 +2,7 @@ import AppStore from './AppState';
 import firebase from 'firebase';
 import ChannelListModel from './ChannelListModel';
 import { IChannel } from './ChannelModel';
-import { EThree } from '@virgilsecurity/e3kit';
+import { EThree } from '@virgilsecurity/e3kit-browser';
 
 export class ChatModel {
     channelsList: ChannelListModel;

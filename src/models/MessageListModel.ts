@@ -5,7 +5,7 @@ import ChannelModel from './ChannelModel';
 
 export interface IMessage {
     id: string;
-    body: string;
+    body: string | Buffer;
     createdAt: Date;
     receiver: string;
     sender: string;
@@ -14,7 +14,7 @@ export interface IMessage {
 export default class MessagesListModel {
     constructor(public channel: ChannelModel) {}
 
-    async sendMessage(message: string) {
+    async sendMessage(message: string | Buffer) {
         firebase.firestore().runTransaction(transaction => {
             return this.updateMessage(transaction, message);
         });
@@ -31,7 +31,7 @@ export default class MessagesListModel {
                     .filter(messageSnapshot => messageSnapshot.type === 'added')
                     .map(e => this.getMessageFromSnapshot(e.doc));
 
-                await this.blindNewMessages(loadedMessages);
+                    await this.blindNewMessages(loadedMessages); // To disable HIPAA behavior, remove this line
                 cb(loadedMessages);
             });
     }
@@ -46,7 +46,7 @@ export default class MessagesListModel {
 
     private updateMessage = async (
         transaction: firebase.firestore.Transaction,
-        message: string,
+        message: string | Buffer,
     ) => {
         const channelRef = ChannelListModel.channelCollectionRef.doc(this.channel.id);
         const snapshot = await transaction.get(channelRef);

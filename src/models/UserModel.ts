@@ -1,5 +1,5 @@
 import firebase from 'firebase';
-import { EThree } from '@virgilsecurity/e3kit';
+import { EThree } from '@virgilsecurity/e3kit-browser';
 import { FirebaseCollections } from './helpers/FirebaseCollections';
 import AppStore from './AppState';
 import ChatModel from './ChatModel';
@@ -43,11 +43,11 @@ class UserApi {
         try {
             await eThree.register();
             await eThree.backupPrivateKey(brainkeyPassword);
-        await this.collectionRef.doc(email).set({
-            createdAt: new Date(),
-            uid: userInfo.user!.uid,
-            channels: [],
-        });
+            await this.collectionRef.doc(email).set({
+                createdAt: new Date(),
+                uid: userInfo.user!.uid,
+                channels: [],
+            });
             this.openChatWindow(email, eThree);
         } catch (error) {
             await userInfo.user!.delete();

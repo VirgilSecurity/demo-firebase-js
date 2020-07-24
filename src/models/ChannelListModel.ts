@@ -1,7 +1,7 @@
 import { FirebaseCollections } from './helpers/FirebaseCollections';
 import firebase from 'firebase';
 import ChannelModel, { IChannel } from './ChannelModel';
-import { EThree } from '@virgilsecurity/e3kit';
+import { EThree } from '@virgilsecurity/e3kit-browser';
 import { base64UrlFromBase64 } from './helpers/base64UrlFromBase64';
 
 export default class ChannelListModel {
