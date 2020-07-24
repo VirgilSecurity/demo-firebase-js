@@ -10,6 +10,7 @@ export const Button = styled.button`
     text-transform: uppercase;
     border: 0;
     border-radius: 3px;
+    align-items: center;
 `;
 
 export const PrimaryButton = Button.extend`

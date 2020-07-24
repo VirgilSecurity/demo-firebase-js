@@ -13,7 +13,8 @@ module.exports = {
         extensions: ['.tsx', '.ts', '.js']
     },
     module: {
-        rules: [{
+        rules: [
+            {
                 test: /\.css$/,
                 use: [
                     'style-loader',
@@ -23,6 +24,11 @@ module.exports = {
             {
                 test: /\.tsx?$/,
                 loader: 'babel-loader',
+            },
+            {
+                test: /\.wasm$/,
+                type: 'javascript/auto',
+                loader: 'file-loader',
             }
         ],
     },

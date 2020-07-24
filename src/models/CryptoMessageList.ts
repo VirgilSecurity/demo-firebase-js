@@ -1,18 +1,17 @@
 import MessagesListModel, { IMessage } from './MessageListModel';
-import { EThree } from '@virgilsecurity/e3kit';
-import { VirgilPublicKey } from 'virgil-crypto';
+import { EThree, ICard } from '@virgilsecurity/e3kit-browser';
 
 export default class EncryptedMessageList {
-    receiverPublicKey: Promise<VirgilPublicKey>;
-    senderPublicKey: Promise<VirgilPublicKey>;
+    receiverCard: Promise<ICard>;
+    senderCard: Promise<ICard>;
 
     constructor(readonly messageList: MessagesListModel, readonly virgilE2ee: EThree) {
-        this.receiverPublicKey = virgilE2ee.lookupPublicKeys(this.messageList.channel.receiver.uid);
-        this.senderPublicKey = virgilE2ee.lookupPublicKeys(this.messageList.channel.sender.uid);
+        this.receiverCard = virgilE2ee.findUsers(this.messageList.channel.receiver.uid);
+        this.senderCard = virgilE2ee.findUsers(this.messageList.channel.sender.uid);
     }
 
     async sendMessage(message: string) {
-        const encryptedMessage = await this.virgilE2ee.encrypt(message, await this.receiverPublicKey);
+        const encryptedMessage = await this.virgilE2ee.authEncrypt(message, await this.receiverCard);
 
         this.messageList.sendMessage(encryptedMessage);
     }
@@ -24,10 +23,10 @@ export default class EncryptedMessageList {
                 // message sender differs from channel sender
                 // cause in channel context current user is always sender
                 const publicKey = message.sender === this.messageList.channel.sender.username
-                    ? this.senderPublicKey
-                    : this.receiverPublicKey;
+                    ? this.senderCard
+                    : this.receiverCard;
 
-                return this.virgilE2ee.decrypt(message.body, await publicKey);
+                return this.virgilE2ee.authDecrypt(message.body, await publicKey);
             });
             const decryptedBodies = await Promise.all(promises);
             newMessages.forEach((m, i) => {

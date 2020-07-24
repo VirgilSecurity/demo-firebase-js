@@ -28,7 +28,7 @@
             "debug",
             "info",
             "time",
-            "timeEnd",
+            "timeEnd"
         ],
         "no-construct": true,
         "no-debugger": true,
