@@ -87,3 +87,10 @@ Now click **PUBLISH**.
 3. Click the "New Channel" to create a channel between the 2 users. Now you can start sending encrypted messages between them.
 
 > Remember, the app deletes messages right after delivery (it's a HIPAA requirement to meet the conduit exception). If you want to see encrypted messages in your Firestore database, run only 1 browser instance, send a message to your chat partner and check Firestore DB's contents before opening the other user's app to receive the message. If you don't want to implement this behavior in your own app, you can remove it from this sample [here](https://github.com/VirgilSecurity/demo-firebase-js/blob/d263f0ddd4f92f51ee2a925cdffd32a19a0387ae/src/models/MessageListModel.ts#L34).
+
+## Support
+Our developer support team is here to help you. Find out more information on our [Help Center](https://help.virgilsecurity.com/).
+
+You can find us on [Twitter](https://twitter.com/VirgilSecurity) or send us email support@VirgilSecurity.com.
+
+Also, get extra help from our support team on [Slack](https://virgilsecurity.com/join-community).
