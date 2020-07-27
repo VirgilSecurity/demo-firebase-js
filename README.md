@@ -8,7 +8,7 @@ You can reuse this sample in your projects to protect user data, documents, imag
 ## Prerequisites
 
 * [Node v10](https://nodejs.org/en/download) or newer
-* [npm](https://www.npmjs.com/get-npm) or yarn
+* [npm](https://www.npmjs.com/get-npm) or [yarn](https://yarnpkg.com/)
 
 ## Set up and run demo
 
