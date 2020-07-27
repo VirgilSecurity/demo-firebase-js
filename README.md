@@ -1,6 +1,6 @@
 # Virgil E3Kit JS Web + Firebase Demo
 
-<a href="https://developer.virgilsecurity.com/docs"><img width="230px" src="https://cdn.virgilsecurity.com/assets/images/github/logos/virgil-logo-red.png" align="left" hspace="10" vspace="6"></a> This is an end-to-end encrypted HIPAA-compliant demo chat app for Firebase that is using [Virgil Security](https://virgilsecurity.com)'s [E3Kit JavaScript SDK](https://github.com/VirgilSecurity/virgil-e3kit-js).
+<a href="https://developer.virgilsecurity.com/docs"><img width="230px" src="https://cdn.virgilsecurity.com/assets/images/github/logos/virgil-logo-red.png" align="left" hspace="10" vspace="6"></a> This is an end-to-end encrypted HIPAA-compliant demo chat app for Firebase that is using [Virgil Security](https://virgilsecurity.com)'s [E3Kit JavaScript SDK](https://github.com/VirgilSecurity/virgil-e3kit-js). The demo allows you to register users and back up their private keys, create peer-to-peer channels and send end-to-end encrypted messages.
 You can reuse this sample in your projects to protect user data, documents, images using Virgil's end-to-end encryption [HIPAA whitepaper](https://virgilsecurity.com/wp-content/uploads/2018/07/Firebase-HIPAA-Chat-Whitepaper-Virgil-Security.pdf).
 
 > The demo is using E3Kit v2.3.3.
