@@ -1,7 +1,14 @@
 # Virgil E3Kit JS Web + Firebase Demo
 
 <a href="https://developer.virgilsecurity.com/docs"><img width="230px" src="https://cdn.virgilsecurity.com/assets/images/github/logos/virgil-logo-red.png" align="left" hspace="10" vspace="6"></a> This is an end-to-end encrypted HIPAA-compliant demo chat app for Firebase that is using [Virgil Security](https://virgilsecurity.com)'s [E3Kit JavaScript SDK](https://github.com/VirgilSecurity/virgil-e3kit-js). The demo allows you to register users and back up their private keys, create peer-to-peer channels and send end-to-end encrypted messages.
+
 You can reuse this sample in your projects to protect user data, documents, images using Virgil's end-to-end encryption [HIPAA whitepaper](https://virgilsecurity.com/wp-content/uploads/2018/07/Firebase-HIPAA-Chat-Whitepaper-Virgil-Security.pdf).
+
+After you set up the demo with the all credentials required in the instructions below you can run a chat for chatting:
+
+<img width="100%" src="https://cdn.virgilsecurity.com/assets/images/github/firebase-js-demo/alice-bob-chatting.png" align="left" hspace="1" vspace="3">
+
+&nbsp;
 
 > The demo is using E3Kit v2.3.3.
 
@@ -31,9 +38,12 @@ To deploy the function, head over to our GitHub repo and follow the instructions
 
 At Firebase dashboard, select the **Authentication** panel and then click the **Sign In Method** tab. Choose the **E-mail** authentication method and click **Done**, then follow instructions and click **Save**.
 
+<img width="100%" src="https://cdn.virgilsecurity.com/assets/images/github/firebase-js-demo/sign-in-firebase.png" align="left" hspace="1" vspace="3">
+&nbsp;
+
 #### Configure Cloud Firestore
 
-Set up a Firestore database for the sample apps: 
+Set up a Firestore database for the sample apps:
 1. Select the **Database** panel
 2. Select **Cloud Firestore**
 3. Click **Create database** under Firestore
@@ -51,12 +61,21 @@ Once the database is created, click on the **Rules** tab, click **Edit rules** a
   ```
 Now click **PUBLISH**.
 
+<img width="100%" src="https://cdn.virgilsecurity.com/assets/images/github/firebase-js-demo/database-firebase.png" align="left" hspace="1" vspace="3">
+
+&nbsp;
 > You only need to do this once - if you had already done it earlier, you don't need to do it again.
 
 ### Add your Firebase project config to app
 
 1. Go to the Firebase console -> your project's page in Firebase console, click the **gear icon** -> **Project settings**
+<img width="100%" src="https://cdn.virgilsecurity.com/assets/images/github/firebase-js-demo/project-settings.png" align="left" hspace="1" vspace="3">
+&nbsp;
+
 2. Click **Add app** and choose **"</> Add Firebase to your web app"**
+<img width="100%" src="https://cdn.virgilsecurity.com/assets/images/github/firebase-js-demo/add-app.png" align="left" hspace="1" vspace="3">
+&nbsp;
+
 3. Copy **only this part** to the clipboard:
   ```
     var firebaseConfig = {
@@ -68,7 +87,14 @@ Now click **PUBLISH**.
       messagingSenderId: "..."
     };
   ```
+
+<img width="100%" src="https://cdn.virgilsecurity.com/assets/images/github/firebase-js-demo/firebaseconf.png" align="left" hspace="1" vspace="3">
+&nbsp;
+
 4. **Replace the copied block** in your `src/firebase.ts` file.
+
+<img width="100%" src="https://cdn.virgilsecurity.com/assets/images/github/firebase-js-demo/firebaseсonfig.png" align="left" hspace="1" vspace="3">
+&nbsp;
 
 ### Build and run
 
@@ -83,8 +109,19 @@ Now click **PUBLISH**.
 ## Explore demo
 
 1. **Browse to http://localhost:1234**. You will see a register/login form; you can use any e-mail and password to sign up a test user.
+<img width="100%" src="https://cdn.virgilsecurity.com/assets/images/github/firebase-js-demo/sign-up.png" align="left" hspace="1" vspace="3">
+
 2. Start a **second incognito or browser window** to have 2 chat apps running with 2 different users. Sign up one more user.
-3. Click the "New Channel" to create a channel between the 2 users. Now you can start sending encrypted messages between them.
+
+<img width="100%" src="https://cdn.virgilsecurity.com/assets/images/github/firebase-js-demo/open-two-windows.png" align="left" hspace="1" vspace="3">
+
+3. Click the "New Channel" to create a channel between the 2 users.
+
+<img width="100%" src="https://cdn.virgilsecurity.com/assets/images/github/firebase-js-demo/find-users.png" align="left" hspace="1" vspace="3">
+
+&nbsp;
+Now you can start sending encrypted messages between them.
+<img width="100%" src="https://cdn.virgilsecurity.com/assets/images/github/firebase-js-demo/alice-bob-chatting.png" align="left" hspace="1" vspace="3">
 
 > Remember, the app deletes messages right after delivery (it's a HIPAA requirement to meet the conduit exception). If you want to see encrypted messages in your Firestore database, run only 1 browser instance, send a message to your chat partner and check Firestore DB's contents before opening the other user's app to receive the message. If you don't want to implement this behavior in your own app, you can remove it from this sample [here](https://github.com/VirgilSecurity/demo-firebase-js/blob/d263f0ddd4f92f51ee2a925cdffd32a19a0387ae/src/models/MessageListModel.ts#L34).
 
