@@ -6,9 +6,7 @@ You can reuse this sample in your projects to protect user data, documents, imag
 
 After you set up the demo with the all credentials required in the instructions below you can run a chat for chatting:
 
-<img width="100%" src="https://cdn.virgilsecurity.com/assets/images/github/firebase-js-demo/alice-bob-chatting.png" align="left" hspace="1" vspace="3">
-
-&nbsp;
+<img src="images/alice-bob-chatting.png" alt="Chat screenshot">
 
 > The demo is using E3Kit v2.3.3.
 
@@ -73,7 +71,7 @@ Now click **PUBLISH**.
 &nbsp;
 
 2. Click **Add app** and choose **"</> Add Firebase to your web app"**
-<img width="100%" src="https://cdn.virgilsecurity.com/assets/images/github/firebase-js-demo/add-app.png" align="left" hspace="1" vspace="3">
+<img width="640px"  src="images/add-app.png" alt="Chat screenshot">
 &nbsp;
 
 3. Copy **only this part** to the clipboard:
@@ -88,12 +86,13 @@ Now click **PUBLISH**.
     };
   ```
 
-<img width="100%" src="https://cdn.virgilsecurity.com/assets/images/github/firebase-js-demo/firebaseconf.png" align="left" hspace="1" vspace="3">
+<img width="640px"  src="images/firebaseconf.png" alt="Chat screenshot">
+
 &nbsp;
 
 4. **Replace the copied block** in your `src/firebase.ts` file.
 
-<img width="100%" src="https://cdn.virgilsecurity.com/assets/images/github/firebase-js-demo/firebaseсonfig.png" align="left" hspace="1" vspace="3">
+<img  width="640px" src="images/firebaseсonfig.png" alt="Chat screenshot">
 &nbsp;
 
 ### Build and run
@@ -109,7 +108,8 @@ Now click **PUBLISH**.
 ## Explore demo
 
 1. **Browse to http://localhost:1234**. You will see a register/login form; you can use any e-mail and password to sign up a test user.
-<img width="100%" src="https://cdn.virgilsecurity.com/assets/images/github/firebase-js-demo/sign-up.png" align="left" hspace="1" vspace="3">
+
+<img width="640px"  src="images/sign-up.png" alt="Chat screenshot">
 
 2. Start a **second incognito or browser window** to have 2 chat apps running with 2 different users. Sign up one more user.
 
@@ -117,11 +117,12 @@ Now click **PUBLISH**.
 
 3. Click the "New Channel" to create a channel between the 2 users.
 
-<img width="100%" src="https://cdn.virgilsecurity.com/assets/images/github/firebase-js-demo/find-users.png" align="left" hspace="1" vspace="3">
+<img width="640px"  src="images/find-users.png" alt="Chat screenshot">
 
 &nbsp;
 Now you can start sending encrypted messages between them.
-<img width="100%" src="https://cdn.virgilsecurity.com/assets/images/github/firebase-js-demo/alice-bob-chatting.png" align="left" hspace="1" vspace="3">
+
+<img src="images/alice-bob-chatting.png" alt="Chat screenshot">
 
 > Remember, the app deletes messages right after delivery (it's a HIPAA requirement to meet the conduit exception). If you want to see encrypted messages in your Firestore database, run only 1 browser instance, send a message to your chat partner and check Firestore DB's contents before opening the other user's app to receive the message. If you don't want to implement this behavior in your own app, you can remove it from this sample [here](https://github.com/VirgilSecurity/demo-firebase-js/blob/d263f0ddd4f92f51ee2a925cdffd32a19a0387ae/src/models/MessageListModel.ts#L34).
 
