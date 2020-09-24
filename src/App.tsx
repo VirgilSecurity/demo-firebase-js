@@ -2,11 +2,11 @@ import React from 'react';
 import ChatPage from './pages/ChatPage';
 import AuthPage from './pages/AuthPage';
 
-import { injectGlobal } from 'styled-components';
+import { createGlobalStyle } from 'styled-components';
 import AppStore, { IAppStore } from './models/AppState';
 import UserApi from './models/UserModel';
 
-injectGlobal`
+const GlobalStyle = createGlobalStyle`
     html {
         box-sizing: border-box;
         background-color: #fafafa;
@@ -59,6 +59,7 @@ export default class App extends React.Component<{}, IAppStore> {
         const isChatPage = this.state.chatModel != null;
         return (
             <React.Fragment>
+                <GlobalStyle />
                 {isAuthPage && <AuthPage store={this.state as IAppStore} model={this.userModel} />}
                 {isChatPage && <ChatPage store={this.state as IAppStore} model={this.state.chatModel!} />}
             </React.Fragment>

@@ -1,5 +1,5 @@
 import AppStore from './AppState';
-import firebase from 'firebase';
+import firebase from 'firebase/app';
 import ChannelListModel from './ChannelListModel';
 import { IChannel } from './ChannelModel';
 import { EThree } from '@virgilsecurity/e3kit-browser';

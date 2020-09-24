@@ -47,7 +47,7 @@ const ChatWorkspace = styled.main`
     justify-content: center;
 `;
 
-const BottomPrimaryButton = PrimaryButton.extend`
+const BottomPrimaryButton = styled(PrimaryButton)`
     margin: 10px 0px;
 `;
 

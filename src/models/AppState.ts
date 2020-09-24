@@ -8,6 +8,7 @@ export interface IAppStore {
     channels: ChannelModel[];
     messages: IMessage[];
     currentChannel: IChannel | null;
+    email?: string;
 }
 
 export default class AppStore {

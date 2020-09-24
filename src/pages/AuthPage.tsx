@@ -1,7 +1,7 @@
 import * as React from 'react';
 import styled from 'styled-components';
 import AuthForm, { IAuthFormValues } from '../components/AuthForm';
-import { FormikActions } from 'formik';
+import { FormikHelpers as FormikActions } from 'formik';
 import UserApi from '../models/UserModel';
 import { IAppStore } from '../models/AppState';
 
