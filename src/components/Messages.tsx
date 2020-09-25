@@ -17,7 +17,7 @@ export interface IMessagesProps {
 }
 
 export default class Messages extends React.Component<IMessagesProps> {
-    ref?: HTMLElement;
+    ref?: HTMLElement | null;
 
     componentDidUpdate() {
         if (this.ref) {
@@ -31,7 +31,7 @@ export default class Messages extends React.Component<IMessagesProps> {
             <Message key={message.createdAt.getTime()} message={message} />
         ));
 
-        return <MessageWrapper innerRef={ref => {this.ref = ref}}>
+        return <MessageWrapper ref={ref => {this.ref = ref}}>
             {messages}
         </MessageWrapper>;
     }

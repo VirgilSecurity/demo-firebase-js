@@ -13,7 +13,7 @@ export const Button = styled.button`
     align-items: center;
 `;
 
-export const PrimaryButton = Button.extend`
+export const PrimaryButton = styled(Button)`
     color: white;
     background-color: #9e3621;
     box-shadow: 0 15px 20px -15px rgba(158, 54, 33, 0.5);
@@ -28,7 +28,7 @@ export const PrimaryButton = Button.extend`
     }
 `;
 
-export const SecondaryButton = Button.extend`
+export const SecondaryButton = styled(Button)`
     --webkit-appearance: none;
     border: 0;
     display: inline-block;

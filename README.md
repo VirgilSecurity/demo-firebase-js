@@ -36,16 +36,15 @@ To deploy the function, head over to our GitHub repo and follow the instructions
 
 At Firebase dashboard, select the **Authentication** panel and then click the **Sign In Method** tab. Choose the **E-mail** authentication method and click **Done**, then follow instructions and click **Save**.
 
-<img width="100%" src="https://cdn.virgilsecurity.com/assets/images/github/firebase-js-demo/sign-in-firebase.png" align="left" hspace="1" vspace="3">
+<img width="100%" src="images/sign-in-firebase.png" align="left" hspace="1" vspace="3">
 &nbsp;
 
 #### Configure Cloud Firestore
 
 Set up a Firestore database for the sample apps:
-1. Select the **Database** panel
-2. Select **Cloud Firestore**
-3. Click **Create database** under Firestore
-4. Choose **Start in test mode** and click **Enable**
+1. Select the **Cloud Firestore** panel
+2. Click **Create database** under Firestore
+3. Choose **Start in test mode** and click **Enable**
 
 Once the database is created, click on the **Rules** tab, click **Edit rules** and paste:
   ```
@@ -59,7 +58,7 @@ Once the database is created, click on the **Rules** tab, click **Edit rules** a
   ```
 Now click **PUBLISH**.
 
-<img width="100%" src="https://cdn.virgilsecurity.com/assets/images/github/firebase-js-demo/database-firebase.png" align="left" hspace="1" vspace="3">
+<img width="100%" src="images/database-firebase.png" align="left" hspace="1" vspace="3">
 
 &nbsp;
 > You only need to do this once - if you had already done it earlier, you don't need to do it again.
@@ -92,7 +91,7 @@ Now click **PUBLISH**.
 
 4. **Replace the copied block** in your `src/firebase.ts` file.
 
-<img  width="640px" src="images/firebaseсonfig.png" alt="Chat screenshot">
+<img  width="740px" src="images/firebaseсonfig.png" alt="Chat screenshot">
 &nbsp;
 
 ### Build and run

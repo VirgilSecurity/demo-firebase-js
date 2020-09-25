@@ -1,4 +1,4 @@
-import firebase from 'firebase';
+import * as firebase from 'firebase';
 import { EThree } from '@virgilsecurity/e3kit-browser';
 import { FirebaseCollections } from './helpers/FirebaseCollections';
 import AppStore from './AppState';

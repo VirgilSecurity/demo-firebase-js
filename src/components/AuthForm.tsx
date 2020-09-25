@@ -1,5 +1,5 @@
 import React from 'react';
-import { Formik, Form, Field, FieldProps, FormikActions, FormikProps, FormikErrors } from 'formik';
+import { Formik, Form, Field, FieldProps, FormikHelpers as FormikActions, FormikProps, FormikErrors } from 'formik';
 import InputField from './InputField';
 import { PrimaryButton } from './Primitives';
 import styled from 'styled-components';
@@ -55,20 +55,20 @@ export default class AuthForm extends React.Component<IAuthFormProps, IAuthFormS
         return errors;
     };
 
-    renderEmailInput = ({ field, form }: FieldProps<IAuthFormValues>) => {
+    renderEmailInput = ({ field, form }: FieldProps<undefined, IAuthFormValues>) => {
         const error =
             form.touched.username && form.errors.username ? (form.errors.username as string) : null;
 
         return <InputField label="email" error={error} {...field} />;
     };
 
-    renderPasswordInput = ({ field, form }: FieldProps<IAuthFormValues>) => {
+    renderPasswordInput = ({ field, form }: FieldProps<undefined, IAuthFormValues>) => {
         const error =
             form.touched.password && form.errors.password ? (form.errors.password as string) : null;
         return <InputField label="password" type="password" error={error} {...field} />;
     };
 
-    renderBrainKeyPasswordInput = ({ field, form }: FieldProps<IAuthFormValues>) => {
+    renderBrainKeyPasswordInput = ({ field, form }: FieldProps<undefined, IAuthFormValues>) => {
         const error =
             form.touched.brainkeyPassword && form.errors.brainkeyPassword
                 ? (form.errors.brainkeyPassword as string)
@@ -92,9 +92,9 @@ export default class AuthForm extends React.Component<IAuthFormProps, IAuthFormS
     renderForm = ({ isValid }: FormikProps<IAuthFormValues>) => {
         return (
             <Form>
-                <Field name="username" render={this.renderEmailInput} />
-                <Field name="password" render={this.renderPasswordInput} />
-                <Field name="brainkeyPassword" render={this.renderBrainKeyPasswordInput} />
+                <Field name="username">{this.renderEmailInput}</Field>
+                <Field name="password">{this.renderPasswordInput}</Field>
+                <Field name="brainkeyPassword">{this.renderBrainKeyPasswordInput}</Field>
                 {this.state.isLoading ? this.renderLoading() : this.renderButtons(isValid)}
             </Form>
         );
@@ -106,8 +106,9 @@ export default class AuthForm extends React.Component<IAuthFormProps, IAuthFormS
                 validate={this.validateForm}
                 initialValues={{ username: '', password: '', brainkeyPassword: '' }}
                 onSubmit={this.onSubmit}
-                render={this.renderForm}
-            />
+            >
+                {this.renderForm}
+            </Formik>
         );
     }
 

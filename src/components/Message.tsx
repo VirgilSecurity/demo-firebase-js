@@ -28,7 +28,7 @@ const MessageBody = styled.div`
     word-break: break-all;
 `
 
-const MessageAvatar = Avatar.extend`
+const MessageAvatar = styled(Avatar)`
     margin: 25px;
     flex: 0 0 auto;
 `

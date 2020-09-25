@@ -1,5 +1,5 @@
 import { FirebaseCollections } from './helpers/FirebaseCollections';
-import firebase from 'firebase';
+import firebase from 'firebase/app';
 import ChannelModel, { IChannel } from './ChannelModel';
 import { EThree } from '@virgilsecurity/e3kit-browser';
 import { base64UrlFromBase64 } from './helpers/base64UrlFromBase64';
