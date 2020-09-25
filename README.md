@@ -42,10 +42,9 @@ At Firebase dashboard, select the **Authentication** panel and then click the **
 #### Configure Cloud Firestore
 
 Set up a Firestore database for the sample apps:
-1. Select the **Database** panel
-2. Select **Cloud Firestore**
-3. Click **Create database** under Firestore
-4. Choose **Start in test mode** and click **Enable**
+1. Select the **Cloud Firestore** panel
+2. Click **Create database** under Firestore
+3. Choose **Start in test mode** and click **Enable**
 
 Once the database is created, click on the **Rules** tab, click **Edit rules** and paste:
   ```
